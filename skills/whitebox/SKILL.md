@@ -19,8 +19,12 @@ groupings, summaries and the code-to-spec descriptions, and each agent output is
 runs until it prints `OK`. Agents never copy source text or line numbers, so the tree cannot corrupt the source.
 
 `S` = this skill's base directory (shown when the skill loads). `CLI` = `S/scripts/whitebox.mjs`.
-`W` = work directory, e.g. `.whitebox-myproject`, inside the *current working directory* (the Workflow tool needs it there)
-and outside the analysed repo, so that repo stays untouched. Node >= 18; git is optional.
+`W` = work directory. Use `<scratchpad>/whitebox-<project>` when the system prompt names a scratchpad directory (scratch files
+never touch the user's directories and need no permission prompts); otherwise `.whitebox-<project>` in the current directory,
+which must not be inside the analysed repo. Always use **absolute paths**: the commands print absolute paths for agents, so a
+different working directory can never break a run.
+The deliverables (`whitebox-<project>.json`, `.html`, `.paths`) go to the current directory unless the user says otherwise,
+because the scratchpad is temporary; tell the user where they are. Node >= 18; git is optional.
 
 ## Workflow
 
@@ -35,16 +39,16 @@ changes files, so those are the user's decisions.
    Ask: proceed / change the selection (tests? config? other exclusions?) / cancel. Mention that the content of
    included files is processed by Haiku subagents; if the repo is proprietary or sensitive, say so and let them decide.
    Re-run split with other flags if they want changes. Do not start the workflow without a yes.
-3. **Workflow** - `node CLI groups-args --work W` prints the args. The Workflow tool only loads scripts from the working
-   directory, and the skill may live elsewhere (plugin or global install), so first `cp S/workflow.js W/workflow.js`, then call
-   the Workflow tool with `scriptPath: W/workflow.js` (absolute path) and those args as a JSON value.
-   Phases: Outline -> Verify -> Merge -> Describe -> Reshape. It is resumable. If the Workflow tool is unavailable, see
-   `references/troubleshooting.md` (manual fallback).
+3. **Workflow** - `node CLI groups-args --work W` prints the args (absolute paths). The Workflow tool loads scripts from the
+   working directory or the scratchpad, and the skill may live elsewhere (plugin or global install), so first
+   `cp S/workflow.js W/workflow.js`, then call the Workflow tool with `scriptPath: W/workflow.js` (absolute) and those args as a
+   JSON value. Phases: Outline -> Verify -> Merge -> Describe -> Reshape. It is resumable. If the Workflow tool is unavailable,
+   see `references/troubleshooting.md` (manual fallback).
 4. **Verify yourself, never trust the summary** - read-only commands only: `node CLI status --work W`,
    `node CLI check-all --work W` (no failing windows), `node CLI reshape-count --work W` (count 0).
    Never re-run `apply-merge` or `reshape-list` to check: they rebuild or reset state.
-5. **Build** - `node CLI build --work W --out whitebox.json`, then `node S/scripts/validate.mjs whitebox.json`
-   (0 errors; warnings are informational), then `node S/scripts/build-editor.mjs whitebox.json whitebox.html`.
+5. **Build** - `node CLI build --work W --out <cwd>/whitebox-<project>.json`, then `node S/scripts/validate.mjs <that json>`
+   (0 errors; warnings are informational), then `node S/scripts/build-editor.mjs <that json> <cwd>/whitebox-<project>.html`.
    Open the HTML. Tell the user: filter with `/`, click a card to edit, In/Out pills include or exclude, the Changes
    drawer exports. Be honest about quality: titles and descriptions are model-written and only spot-checked.
 6. **Looking at the result with the user** - offer to read branches aloud, answer questions from the tree, or

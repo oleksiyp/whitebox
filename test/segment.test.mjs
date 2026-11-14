@@ -92,3 +92,15 @@ test("column-0 lines inside braces do not start new pieces (brace depth is track
   assert.equal(holder("w1x0"), holder("w3x44"), "the whole literal stays in one piece");
   assert.equal(holder("var table"), holder("w2x3"));
 });
+
+test("a UTF-8 BOM does not hide a first-line fence or heading (Windows files)", () => {
+  const md = "﻿```js\ncode line\n\nmore code\n```\n\ntext after\n";
+  const { P, lines } = split({ "b.md": md });
+  const L = lines("b.md"), ps = byFile(P, "b.md");
+  const holder = needle => ps.find(p => L.slice(p.s - 1, p.e).some(l => l.includes(needle)));
+  assert.equal(holder("code line"), holder("more code"), "fenced block stays in one piece");
+  const h = split({ "h.md": "﻿# Title\n\nBody text here.\n" });
+  assert.ok(!byFile(h.P, "h.md").some(p => h.lines("h.md").slice(p.s - 1, p.e).some(l => l.includes("Title"))), "the BOM'd first heading is a heading, not a piece");
+  const go = split({ "b.go": "﻿package x\n\nfunc A() {}\n" });
+  assert.ok(byFile(go.P, "b.go").length >= 1);
+});

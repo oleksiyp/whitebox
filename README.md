@@ -39,7 +39,7 @@ Workflow tool (a manual fallback using plain subagents is documented in
 [`references/troubleshooting.md`](skills/whitebox/references/troubleshooting.md)).
 
 ## Use
-In Claude Code, from the directory where scratch files may live (not inside the analysed repo):
+In Claude Code, from any directory (scratch files go to Claude's scratchpad, the finished `whitebox-<project>.html` and `.json` to the current directory):
 ```text
 /whitebox ~/dev/some-project
 ```

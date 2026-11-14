@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-import { cli, run, SCRIPTS, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions } from "./helpers.mjs";
+import { cli, applyEdits, validate, buildEditor, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions } from "./helpers.mjs";
 
 /** run the whole deterministic pipeline with fake agents; returns paths */
 function pipeline() {
@@ -68,14 +68,14 @@ test("merge -> describe -> build -> validate -> editor, end to end", () => {
   (function w(n) { if (n.children) n.children.forEach(w); else { leaves++; if (n.kind === "code") { code++; assert.ok(n.description); assert.ok(["go", "py"].includes(n.lang)); } assert.equal(typeof n.text, "string"); } })(T.tree);
   assert.ok(leaves >= 20 && code >= 4, `leaves ${leaves}, code ${code}`);
   assert.ok(fs.existsSync(path.join(cwd, "whitebox.paths")));
-  r = run(path.join(SCRIPTS, "validate.mjs"), [json]); assert.equal(r.code, 0, r.out);
+  r = validate([json]); assert.equal(r.code, 0, r.out);
   // leaf text really is the source text (validator checks it; spot check one here)
   const leaf = (function f(n) { return n.children ? n.children.map(f).find(Boolean) : n; })(T.tree);
   const L = fs.readFileSync(path.join(T.root, leaf.file), "utf8").split("\n");
   assert.equal(L.slice(leaf.start - 1, leaf.end).join("\n"), leaf.text);
   // editor
   const html = path.join(cwd, "whitebox.html");
-  r = run(path.join(SCRIPTS, "build-editor.mjs"), [json, html]); assert.equal(r.code, 0, r.out);
+  r = buildEditor([json, html]); assert.equal(r.code, 0, r.out);
   const page = fs.readFileSync(html, "utf8");
   assert.ok(!page.includes("__TREE__") && !page.includes("__APPLY_CMD__"));
   assert.match(page, /apply-edits\.mjs whitebox-edits\.json/);
@@ -90,7 +90,7 @@ test("validator catches a leaf whose text no longer matches the file", () => {
   const T = readJson(json);
   const leaf = (function f(n) { return n.children ? n.children.map(f).find(Boolean) : n; })(T.tree);
   leaf.text += " tampered"; fs.writeFileSync(json, JSON.stringify(T));
-  const r = run(path.join(SCRIPTS, "validate.mjs"), [json]);
+  const r = validate([json]);
   assert.equal(r.code, 1); assert.match(r.out, /text differs/);
 });
 
@@ -129,6 +129,6 @@ test("the cost estimate scales with agents and is printed after split", () => {
   const { work } = pipeline();
   const E = readJson(path.join(work, "estimate.json"));
   assert.ok(E.agents >= E.windows && E.tokensM > 0 && E.minutes > 0);
-  assert.equal(E.tokensM, +(E.agents * 0.06).toFixed(1));
+  assert.equal(E.tokensM, Math.floor((E.agents * 6 + 5) / 10) / 10);
   assert.match(cli(["estimate", "--work", work]).out, /estimate: ~\d+ haiku agents/);
 });

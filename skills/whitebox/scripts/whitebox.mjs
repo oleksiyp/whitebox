@@ -34,34 +34,42 @@ const readJ = p => JSON.parse(fs.readFileSync(p, "utf8"));
 const die = m => { console.error(m); process.exit(1); };
 
 /* ---------------- segmenter (deterministic) ---------------- */
-const SELF = path.relative(process.cwd(), process.argv[1]);
-const W = s => (s.match(/\S+/g) || []).length;
-const isHeading = l => /^ {0,3}#{1,6}\s+\S/.test(l);
+// Everything printed for agents is absolute and quoted when needed, so an agent's working directory can never matter.
+const q = x => (/[ \t"'\\$&;()<>|*?\[\]{}!~#`]/.test(x) ? JSON.stringify(x) : x);
+const SELF = q(path.resolve(process.argv[1]));
+const W = s => (s.match(/[^ \t\r\n\f\v]+/g) || []).length;
+const isHeading = l => /^ {0,3}#{1,6}[ \t\r\n\f\v]+[^ \t\r\n\f\v]/.test(l);
 const fenceRe = /^ {0,3}(`{3,}|~{3,})/;
-const listRe = /^( {0,3})([-*+]|\d{1,3}[.)])\s+/;
-const H = s => crypto.createHash("sha1").update(s).digest("hex").slice(0, 10);
-const clean = s => s.replace(/[`*_]|\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/\s+/g, " ").trim();
+const listRe = /^( {0,3})([-*+]|\d{1,3}[.)])[ \t\r\n\f\v]+/;
+// Determinism for ports: whitespace is ASCII-only, sorting is bytewise, lowercasing is ASCII-only, so that awk and
+// PowerShell implementations can match this one exactly (JS defaults are Unicode/locale aware).
+String.prototype.trim = function () { return this.replace(/^[ \t\r\n\f\v]+|[ \t\r\n\f\v]+$/g, ""); };
+const cmp = (a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b));
+const lower = x => x.replace(/[A-Z]/g, c => String.fromCharCode(c.charCodeAt(0) + 32));
+const sha1 = buf => crypto.createHash("sha1").update(buf).digest("hex");
+const clean = s => s.replace(/[`*_]|\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[ \t\r\n\f\v]+/g, " ").trim();
 const txt = (L, s, e) => L.slice(s - 1, e).join("\n");
 function parseFile(L) {
+  L = L.slice(); if (L.length) L[0] = L[0].replace(/^\uFEFF/, ""); // a leading BOM must not hide a first-line heading or fence (the piece text keeps it)
   const n = L.length, ev = []; let i = 0;
   while (i < n) {
     const l = L[i]; if (!l.trim()) { i++; continue; }
     let m;
     if ((m = l.match(fenceRe))) { let j = i + 1; while (j < n && !L[j].trim().startsWith(m[1].slice(0, 3))) j++; ev.push({ t: "u", s: i + 1, e: Math.min(j, n - 1) + 1 }); i = j + 1; continue; }
-    if (isHeading(l)) { const h = l.match(/^ {0,3}(#{1,6})\s+(.*?)\s*#*\s*$/); ev.push({ t: "h", level: h[1].length, raw: clean(h[2]) }); i++; continue; }
-    if (/^\s*\|/.test(l)) { let j = i; while (j + 1 < n && /^\s*\|/.test(L[j + 1])) j++; ev.push({ t: "u", s: i + 1, e: j + 1 }); i = j + 1; continue; }
+    if (isHeading(l)) { const h = l.match(/^ {0,3}(#{1,6})[ \t\r\n\f\v]+(.*?)[ \t\r\n\f\v]*#*[ \t\r\n\f\v]*$/); ev.push({ t: "h", level: h[1].length, raw: clean(h[2]) }); i++; continue; }
+    if (/^[ \t\r\n\f\v]*\|/.test(l)) { let j = i; while (j + 1 < n && /^[ \t\r\n\f\v]*\|/.test(L[j + 1])) j++; ev.push({ t: "u", s: i + 1, e: j + 1 }); i = j + 1; continue; }
     if (listRe.test(l)) {
       let j = i;
       while (j + 1 < n) {
         const nx = L[j + 1];
-        if (!nx.trim()) { let k = j + 1; while (k < n && !L[k].trim()) k++; if (k < n && /^( {2,}|\t)\S/.test(L[k]) && !isHeading(L[k])) { j = k; continue; } break; }
-        if (isHeading(nx) || (fenceRe.test(nx) && !/^\s/.test(nx)) || (listRe.test(nx) && !/^ {2,}/.test(nx)) || /^\|/.test(nx)) break;
+        if (!nx.trim()) { let k = j + 1; while (k < n && !L[k].trim()) k++; if (k < n && /^( {2,}|\t)[^ \t\r\n\f\v]/.test(L[k]) && !isHeading(L[k])) { j = k; continue; } break; }
+        if (isHeading(nx) || (fenceRe.test(nx) && !/^[ \t\r\n\f\v]/.test(nx)) || (listRe.test(nx) && !/^ {2,}/.test(nx)) || /^\|/.test(nx)) break;
         j++;
       }
       ev.push({ t: "u", s: i + 1, e: j + 1 }); i = j + 1; continue;
     }
     let j = i;
-    while (j + 1 < n && L[j + 1].trim() && !isHeading(L[j + 1]) && !fenceRe.test(L[j + 1]) && !listRe.test(L[j + 1]) && !/^\s*\|/.test(L[j + 1])) j++;
+    while (j + 1 < n && L[j + 1].trim() && !isHeading(L[j + 1]) && !fenceRe.test(L[j + 1]) && !listRe.test(L[j + 1]) && !/^[ \t\r\n\f\v]*\|/.test(L[j + 1])) j++;
     ev.push({ t: "u", s: i + 1, e: j + 1 }); i = j + 1;
   }
   const root = { raw: "", level: 0, kids: [] }, stack = [root];
@@ -106,7 +114,7 @@ function piecesOf(L) {
   })(parseFile(L), []);
   return out;
 }
-const snip = (s, n) => { const w = clean(s).split(/\s+/); return w.slice(0, n).join(" ") + (w.length > n ? " …" : ""); };
+const snip = (s, n) => { const w = clean(s).split(/[ \t\r\n\f\v]+/); return w.slice(0, n).join(" ") + (w.length > n ? " …" : ""); };
 const walk = (d, o = [], all = false) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { if (e.name.startsWith(".") || e.name === "node_modules") continue; const p = path.join(d, e.name); e.isDirectory() ? walk(p, o, all) : (all || /\.(md|markdown)$/i.test(e.name)) && o.push(p); } return o; };
 
 /* ---------------- project file selection ---------------- */
@@ -127,7 +135,7 @@ function collectProject(dir) {
   const reasons = {}, samples = {}, included = [];
   const skip = (rel, why) => { reasons[why] = (reasons[why] || 0) + 1; (samples[why] ??= []).length < 3 && samples[why].push(rel); };
   for (const rel of rels) {
-    const abs = path.join(dir, rel), parts = rel.split("/"), name = parts.at(-1), ext = (name.includes(".") ? name.split(".").pop() : "").toLowerCase();
+    const abs = path.join(dir, rel), parts = rel.split("/"), name = parts.at(-1), ext = lower(name.includes(".") ? name.split(".").pop() : "");
     if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) continue;
     const forced = incl.some(r => r.test(rel));
     if (excl.some(r => r.test(rel))) { skip(rel, "excluded by --exclude"); continue; }
@@ -135,7 +143,7 @@ function collectProject(dir) {
       if (parts.some(x => x.startsWith("."))) { skip(rel, "hidden file or directory"); continue; }
       if (parts.slice(0, -1).some(x => SKIP_DIRS.has(x))) { skip(rel, "generated / vendored / fixture directory"); continue; }
       if (SECRET_RE.test(rel)) { skip(rel, "looks like a secret or key file (never sent to a model; use --include to override)"); continue; }
-      if (LOCKS.has(name.toLowerCase())) { skip(rel, "lockfile"); continue; }
+      if (LOCKS.has(lower(name))) { skip(rel, "lockfile"); continue; }
       if (/\.min\.|\.map$/.test(name)) { skip(rel, "minified / sourcemap"); continue; }
       const kind = ext === "md" || ext === "markdown" ? "doc" : CODE_EXT[ext] ? "code" : CFG_EXT.has(ext) ? "config" : null;
       if (!kind) { skip(rel, "other file type (binary, media, text data)"); continue; }
@@ -155,6 +163,7 @@ function collectProject(dir) {
 const DECL = /^(func|type|class|def|fn|pub|impl|struct|enum|trait|interface|const|var|let|export|import|package|module|use|async|public|private|protected|static|abstract|final|namespace|template|extern|mod|object|data|sealed|open)\b/;
 const LEAD = /^(\/\/|\/\*|#(?!include|define|if|endif|pragma|!)|--|@[A-Za-z_(])/;
 function codeUnits(L, lang) {
+  L = L.slice(); if (L.length) L[0] = L[0].replace(/^\uFEFF/, "");
   const n = L.length, units = []; let depth = 0, inBlock = false, cur = null, chain = false, lastNb = 0, blankSince = false;
   const py = lang === "py" || lang === "sh" || lang === "ruby";
   const bal = l => {
@@ -168,7 +177,7 @@ function codeUnits(L, lang) {
   for (let i = 0; i < n; i++) {
     const l = L[i];
     if (!l.trim()) { blankSince = true; continue; }
-    const col0 = !/^\s/.test(l);
+    const col0 = !/^[ \t\r\n\f\v]/.test(l);
     if (col0 && !inBlock) {
       if (DECL.test(l)) depth = 0;
       const lead = LEAD.test(l);
@@ -192,16 +201,16 @@ function cmdSplit() {
   if (pos.length === 1 && fs.statSync(pos[0]).isDirectory()) {
     ROOT = path.resolve(pos[0]); report = collectProject(ROOT); files = report.files;
   } else { files = pos.map(f => path.resolve(f)); ROOT = path.dirname(files[0]); while (!files.every(f => f.startsWith(ROOT + path.sep))) ROOT = path.dirname(ROOT); }
-  files.sort((a, b) => path.relative(ROOT, a).toLowerCase().localeCompare(path.relative(ROOT, b).toLowerCase()));
+  files.sort((a, b) => cmp(lower(path.relative(ROOT, a)), lower(path.relative(ROOT, b))));
   const pieces = [], fl = [];
   files.forEach((abs, fi) => {
     const rel = path.relative(ROOT, abs), raw = fs.readFileSync(abs, "utf8"), L = raw.replace(/\r\n/g, "\n").split("\n");
     if (L.at(-1) === "") L.pop();
-    const ext = (rel.split(".").pop() || "").toLowerCase(), lang = CODE_EXT[ext], first = pieces.length + 1;
+    const ext = lower(rel.split(".").pop() || ""), lang = CODE_EXT[ext], first = pieces.length + 1;
     if (lang) {
-      for (const u of pack(L, codeUnits(L, lang), 200, 40, true)) pieces.push({ i: pieces.length + 1, f: fi, s: u.s, e: u.e, w: u.w, hp: "", k: "c", lang, sn: codeSnippet(L, u.s, u.e), h: H(txt(L, u.s, u.e)) });
-    } else for (const p of piecesOf(L)) pieces.push({ i: pieces.length + 1, f: fi, s: p.s, e: p.e, w: p.w, hp: p.hp, sn: snip(txt(L, p.s, p.e), 18), h: H(txt(L, p.s, p.e)) });
-    fl.push({ rel, bytes: Buffer.byteLength(raw), first, last: pieces.length, lang: lang || "md" });
+      for (const u of pack(L, codeUnits(L, lang), 200, 40, true)) pieces.push({ i: pieces.length + 1, f: fi, s: u.s, e: u.e, w: u.w, hp: "", k: "c", lang, sn: codeSnippet(L, u.s, u.e) });
+    } else for (const p of piecesOf(L)) pieces.push({ i: pieces.length + 1, f: fi, s: p.s, e: p.e, w: p.w, hp: p.hp, sn: snip(txt(L, p.s, p.e), 18) });
+    fl.push({ rel, bytes: Buffer.byteLength(raw), first, last: pieces.length, lang: lang || "md", h: sha1(fs.readFileSync(abs)) });
   });
   if (report) {
     const by = {}; fl.forEach(f => by[f.lang] = (by[f.lang] || 0) + 1);
@@ -235,7 +244,7 @@ function cmdSplit() {
     return { g: gi + 1, files: fs_.map(f => f.rel), bytes: g.reduce((a, x) => a + x.bytes, 0), from, to, windows };
   });
   fs.mkdirSync(wp("out"), { recursive: true }); fs.mkdirSync(wp("desc"), { recursive: true });
-  fs.writeFileSync(wp("pieces.json"), JSON.stringify({ root: ROOT, files: fl, pieces }));
+  fs.writeFileSync(wp("pieces.json"), `{"root":${JSON.stringify(ROOT)},"files":[\n${fl.map(f => JSON.stringify(f)).join(",\n")}\n],"pieces":[\n${pieces.map(x => JSON.stringify(x)).join(",\n")}\n]}\n`);
   fs.writeFileSync(wp("groups.json"), JSON.stringify(G, null, 1));
   console.log(`${files.length} files, ${pieces.length} pieces -> ${G.length} groups`);
   const est = estimateOf(pieces, G); fs.writeFileSync(wp("estimate.json"), JSON.stringify(est)); printEstimate(est);
@@ -252,7 +261,7 @@ function estimateOf(pieces, G) {
   const agents = Math.round(windows * 1.2 + G.length + pieces.length / 150 + 6);
   const longest = Math.max(...G.map(g => g.windows.length));
   const minutes = Math.round(longest * 3.2 + 6 + Math.min(10, pieces.length / 1500));
-  return { pieces: pieces.length, docPieces: doc, codePieces: code, windows, groups: G.length, agents, tokensM: +(agents * 0.06).toFixed(1), minutes };
+  return { pieces: pieces.length, docPieces: doc, codePieces: code, windows, groups: G.length, agents, tokensM: Math.floor((agents * 6 + 5) / 10) / 10, minutes };
 }
 function printEstimate(e) {
   console.log(`estimate: ~${e.agents} haiku agents, ~${e.tokensM}M tokens, ~${e.minutes} min wall-clock (${e.docPieces} doc + ${e.codePieces} code pieces, ${e.windows} windows). Rough: real runs landed within 0.5x-2x.`);
@@ -268,7 +277,7 @@ function readOut(g, w) {
   const f = outFile(g, w); if (!fs.existsSync(f)) return null;
   return fs.readFileSync(f, "utf8").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const k = l.indexOf(";"), rest = l.slice(k + 1), k2 = rest.indexOf(";"); return { id: +l.slice(0, k), path: (k2 < 0 ? rest : rest.slice(0, k2)).trim(), desc: k2 < 0 ? "" : rest.slice(k2 + 1).trim() }; });
 }
-const segsOk = s => { const w = s.trim().split(/\s+/).filter(Boolean); return w.length >= 2 && w.length <= 4 && !/[;]/.test(s); };
+const segsOk = s => { const w = s.trim().split(/[ \t\r\n\f\v]+/).filter(Boolean); return w.length >= 2 && w.length <= 4 && !/[;]/.test(s); };
 
 /* ---------------- window ---------------- */
 function cmdWindow() {
@@ -277,8 +286,8 @@ function cmdWindow() {
   const prevSum = w > 1 && fs.existsSync(sumFile(g, w - 1)) ? fs.readFileSync(sumFile(g, w - 1), "utf8").trim() : "";
   const vocab = new Map();
   for (let k = 1; k < w; k++) for (const r of readOut(g, k) || []) { const s = r.path.split("/"); s.pop(); for (let d = 1; d <= Math.min(3, s.length); d++) { const p = s.slice(0, d).join("/"); vocab.set(p, (vocab.get(p) || 0) + 1); } }
-  let vl = [...vocab].sort((a, b) => a[0].localeCompare(b[0])); if (vl.length > 160) vl = vl.filter(([p]) => p.split("/").length <= 2);
-  const out = `${path.relative(process.cwd(), outFile(g, w))}`, sum = `${path.relative(process.cwd(), sumFile(g, w))}`;
+  let vl = [...vocab].sort((a, b) => cmp(a[0], b[0])); if (vl.length > 160) vl = vl.filter(([p]) => p.split("/").length <= 2);
+  const out = `${q(path.resolve(outFile(g, w)))}`, sum = `${q(path.resolve(sumFile(g, w)))}`;
   let hasCode = false; for (let i = win.from; i <= win.to; i++) if (P().pieces[i - 1].k === "c") { hasCode = true; break; }
   const codeRules = hasCode ? `
 CODE PIECES (marked [code <lang>]) - INVERT THE CODE INTO SPECIFICATION
@@ -305,7 +314,7 @@ ${codeRules}
 DO THIS
 1. Write the lines to  ${out}  with the Write tool.
 2. Write a summary (max 60 words, plain text) to  ${sum}  saying what this group covers so far (build on the previous summary).
-3. Run:  node ${SELF} check ${g} ${w} --work ${path.relative(process.cwd(), WORK) || "."}   and fix the files until it prints OK.
+3. Run:  node ${SELF} check ${g} ${w} --work ${q(WORK)}   and fix the files until it prints OK.
 Reply with just "done".
 
 PREVIOUS SUMMARY: ${prevSum || "(first window)"}
@@ -389,7 +398,7 @@ RULES
 - Different groups/segments covering the same theme MUST be given the same prefix so they merge into one branch (e.g. several "Screens ..." segments from groups 4-6 all go under "Frontend/Screens And Navigation").
 - Prefix has 1 or 2 segments (each 2-4 words, Title Case, no ";" or quotes). Use 2 when a theme needs a parent so that no branch ends up with more than ~9 children. Keep the original document order of themes where possible.
 - Don't invent content; do not drop any branch.
-Write the lines to ${path.relative(process.cwd(), wp("merge.txt"))} with the Write tool, then run:  node ${SELF} apply-merge --work ${path.relative(process.cwd(), WORK) || "."}   and fix the file until it prints OK. Reply with just "done".
+Write the lines to ${q(wp("merge.txt"))} with the Write tool, then run:  node ${SELF} apply-merge --work ${q(WORK)}   and fix the file until it prints OK. Reply with just "done".
 
 GROUPS${lines.join("\n")}`);
 }
@@ -431,12 +440,12 @@ function cmdDescribeInput() {
   const g = +pos[0], rows = treeRows().filter(r => r.g === g);
   const br = new Map();
   for (const r of rows) { const s = r.path.split("/"); for (let d = 1; d < s.length && d <= 3; d++) { const p = s.slice(0, d).join("/"); if (!br.has(p)) br.set(p, { n: 0, ch: new Set() }); const o = br.get(p); o.n++; o.ch.add(s[d]); } }
-  const list = [...br].sort((a, b) => a[0].localeCompare(b[0]));
+  const list = [...br].sort((a, b) => cmp(a[0], b[0]));
   console.log(`TASK
 Write a one-sentence description (max 20 words, plain text, no quotes or ";") for each BRANCH below, saying what that part of the specification covers. Use the child titles as evidence.
 Output ONE LINE per branch, exactly:   <Branch/Path exactly as shown>;<description>
-Write the lines to ${path.relative(process.cwd(), wp("desc", `g${g}.txt`))} with the Write tool (every branch exactly once), then run:
-  node ${SELF} check-desc ${g} --work ${path.relative(process.cwd(), WORK) || "."}   and fix until it prints OK. Reply with just "done".
+Write the lines to ${q(wp("desc", `g${g}.txt`))} with the Write tool (every branch exactly once), then run:
+  node ${SELF} check-desc ${g} --work ${q(WORK)}   and fix until it prints OK. Reply with just "done".
 
 BRANCHES (${list.length})
 ${list.map(([p, o]) => `${p}   [${o.n} pieces]  children: ${[...o.ch].slice(0, 8).join(", ")}`).join("\n")}`);
@@ -452,7 +461,7 @@ function cmdCheckDesc() {
 }
 
 /* ---------------- reshape wide branches ---------------- */
-const SELFREL = path.relative(process.cwd(), WORK) || ".";
+const SELFREL = q(WORK);
 function loadDesc() {
   const all = wp("desc", "_all.txt"), m = new Map();
   const files = fs.existsSync(all) ? [all] : fs.existsSync(wp("desc")) ? fs.readdirSync(wp("desc")).filter(f => /^g\d+\.txt$/.test(f)).sort().map(f => wp("desc", f)) : [];
@@ -467,7 +476,7 @@ function widths(rows) {
 }
 function cmdReshapeList() {
   const rows = treeRows(), kids = widths(rows);
-  const wide = [...kids].filter(([, m]) => m.size > 9).map(([p, m]) => ({ path: p, n: m.size })).sort((a, b) => a.path.localeCompare(b.path));
+  const wide = [...kids].filter(([, m]) => m.size > 9).map(([p, m]) => ({ path: p, n: m.size })).sort((a, b) => cmp(a.path, b.path));
   if (fs.existsSync(wp("reshape")) && fs.readdirSync(wp("reshape")).length) fs.renameSync(wp("reshape"), wp(`reshape-archive-${Date.now()}`));
   fs.mkdirSync(wp("reshape"), { recursive: true });
   fs.writeFileSync(wp("wide.json"), JSON.stringify(wide));
@@ -490,7 +499,7 @@ Write ONE LINE per child, exactly:    <Child Title exactly as shown>;<Group Titl
 - Group Title: 2-4 words, Title Case, no ";" or "/" or quotes, different from every child title.
 - description: one sentence, max 20 words, saying what the group covers.
 - Each group should end up with 2-9 children; keep children of a group close in the original order where the theme allows.
-Write the lines to ${path.relative(process.cwd(), wp("reshape", `r${n}.txt`))} with the Write tool, then run:
+Write the lines to ${q(wp("reshape", `r${n}.txt`))} with the Write tool, then run:
   node ${SELF} check-reshape ${n} --work ${SELFREL}   and fix the file until it prints OK. Reply with just "done".
 
 CHILDREN of "${w.path}"
@@ -535,7 +544,7 @@ function cmdApplyReshape() {
 }
 
 function cmdGroupsArgs() {
-  console.log(JSON.stringify({ work: path.relative(process.cwd(), WORK) || ".", cli: SELF, groups: GR().map(g => ({ g: g.g, windows: g.windows.length })) }));
+  console.log(JSON.stringify({ work: WORK, cli: path.resolve(process.argv[1]), groups: GR().map(g => ({ g: g.g, windows: g.windows.length })) }));
 }
 
 /* ---------------- build ---------------- */
@@ -554,8 +563,9 @@ function cmdBuild() {
     });
   }
   const cache = {}; const lines_ = f => cache[f] ??= fs.readFileSync(path.join(P().root, f), "utf8").replace(/\r\n/g, "\n").split("\n");
-  let stale = 0; const staleFiles = new Set();
-  (function w(n) { n.id = "n" + id++; if (n.children) n.children.forEach(w); else { n.text = lines_(n.file).slice(n.start - 1, n.end).join("\n"); const pc = byRange.get(`${n.file}:${n.start}-${n.end}`); if (pc && pc.h && H(n.text) !== pc.h) { stale++; staleFiles.add(n.file); } } })(root);
+  let stale = 0; const staleFiles = new Set(), fileHash = new Map(P().files.map(f => [f.rel, f.h]));
+  const fresh = new Map(); const isFresh = f => { if (!fresh.has(f)) { const want = fileHash.get(f); fresh.set(f, !want || sha1(fs.readFileSync(path.join(P().root, f))) === want); } return fresh.get(f); };
+  (function w(n) { n.id = "n" + id++; if (n.children) n.children.forEach(w); else { n.text = lines_(n.file).slice(n.start - 1, n.end).join("\n"); if (!isFresh(n.file)) { stale++; staleFiles.add(n.file); } } })(root);
   if (stale && !argv.includes("--allow-stale")) die(`ERROR: ${stale} piece(s) in ${staleFiles.size} file(s) changed since the split (${[...staleFiles].slice(0, 5).join(", ")}${staleFiles.size > 5 ? ", ..." : ""}). The titles and descriptions were written for the old text. Re-run split (and the agents) on the current files, or pass --allow-stale to build anyway.`);
   const out = path.resolve(opt("--out", "whitebox.json"));
   fs.writeFileSync(out, JSON.stringify({ version: 1, root: P().root, title, tree: root }));

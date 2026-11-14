@@ -6,16 +6,38 @@ import { fileURLToPath } from "node:url";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const SCRIPTS = path.join(ROOT, "skills", "whitebox", "scripts");
-export const CLI = path.join(SCRIPTS, "whitebox.mjs");
 
 export function tmp(prefix = "wb-") { return fs.mkdtempSync(path.join(os.tmpdir(), prefix)); }
 
-/** run a script, return {code, out}; never throws */
-export function run(script, args, opts = {}) {
-  const r = spawnSync("node", [script, ...args], { encoding: "utf8", cwd: opts.cwd, maxBuffer: 1 << 28 });
+/**
+ * Which implementation the suite exercises (the same tests run against all of them):
+ *   WHITEBOX_IMPL=node (default) | sh | ps
+ *   WHITEBOX_SH     shell used for the sh port (default "sh"; try dash, bash, "busybox sh")
+ *   WHITEBOX_PWSH   PowerShell executable (default "pwsh"; on Windows PowerShell 5.1 use "powershell")
+ *   WHITEBOX_PREFIX command prefix, e.g. a "docker run --rm -v /tmp:/tmp -v <repo>:<repo> -w /tmp IMAGE"
+ *                   so the port runs inside Linux/busybox/pwsh containers while the harness stays on the host
+ */
+export const IMPL = process.env.WHITEBOX_IMPL || "node";
+const PREFIX = (process.env.WHITEBOX_PREFIX || "").split(/\s+/).filter(Boolean);
+const SHELL = (process.env.WHITEBOX_SH || "sh").split(/\s+/).filter(Boolean);
+const PWSH = (process.env.WHITEBOX_PWSH || "pwsh").split(/\s+/).filter(Boolean);
+const EXT = { node: ".mjs", sh: ".sh", ps: ".ps1" };
+/** argv prefix for one of the tools: whitebox | apply-edits | validate | build-editor */
+export function toolCommand(name, impl = IMPL) {
+  const file = path.join(SCRIPTS, name + EXT[impl]);
+  const base = impl === "node" ? ["node", file] : impl === "sh" ? [...SHELL, file] : [...PWSH, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", file];
+  return impl === "node" ? base : [...PREFIX, ...base];   // the prefix (containers) only applies to ports
+}
+/** run a tool, return {code, out, stdout}; never throws */
+export function tool(name, args, opts = {}) {
+  const [cmd, ...pre] = toolCommand(name, opts.impl);
+  const r = spawnSync(cmd, [...pre, ...args], { encoding: "utf8", cwd: opts.cwd, maxBuffer: 1 << 28, env: { ...process.env, ...(opts.env || {}) } });
   return { code: r.status, out: (r.stdout || "") + (r.stderr || ""), stdout: r.stdout || "" };
 }
-export const cli = (args, opts) => run(CLI, args, opts);
+export const cli = (args, opts) => tool("whitebox", args, opts);
+export const applyEdits = (args, opts) => tool("apply-edits", args, opts);
+export const validate = (args, opts) => tool("validate", args, opts);
+export const buildEditor = (args, opts) => tool("build-editor", args, opts);
 
 /** create a git project from {relpath: content}; returns its directory */
 export function project(files, { git = true, ignore = "" } = {}) {

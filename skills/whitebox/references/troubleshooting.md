@@ -10,7 +10,7 @@ for `reshape-input N` (after `reshape-list`), followed by `apply-reshape`. Windo
 not 2-4 words, duplicate paths, missing code descriptions). Edit `W/out/gG-wN.txt` yourself or delete it and re-run the window.
 
 **Redo only the reshape phase** (e.g. quality was poor): `rm W/reshape.applied W/desc/_all.txt`,
-`node CLI apply-merge --work W --force`, then `cp S/reshape.js W/reshape.js` and the Workflow tool with `W/reshape.js` and args `{"work":"W","cli":"CLI"}`.
+`node CLI apply-merge --work W --force`, then `cp S/reshape.js W/reshape.js` and the Workflow tool with `W/reshape.js` (absolute) and args `{"work":"W","cli":"CLI"}`.
 
 **Redo only the merge:** delete `W/merge.txt`, run the merge agent again (`merge-input`), then `apply-merge --force`
 and redo reshape as above.

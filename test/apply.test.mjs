@@ -2,9 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { cli, run, SCRIPTS, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions } from "./helpers.mjs";
+import { cli, applyEdits, validate, buildEditor, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions } from "./helpers.mjs";
 
-const APPLY = path.join(SCRIPTS, "apply-edits.mjs");
 function built() {
   const dir = sampleProject(), cwd = tmp("wb-out-"), work = path.join(cwd, "w");
   cli(["split", dir, "--work", work]); fakeAgents(work); cli(["apply-merge", "--work", work]);
@@ -26,10 +25,10 @@ test("applies markdown edits, ignores code pieces, never touches source code", (
     excluded: [{ file: doc2.file, start: doc2.start, end: doc2.end, before: doc2.text }, { file: code.file, start: code.start, end: code.end, before: code.text, kind: "code" }],
     intents: [{ file: code.file, start: code.start, end: code.end, before: "a", after: "b" }] };
   const ef = path.join(cwd, "edits.json"); fs.writeFileSync(ef, JSON.stringify(edits));
-  let r = run(APPLY, [ef, "--drop-excluded", "--dry-run"]);
+  let r = applyEdits([ef, "--drop-excluded", "--dry-run"]);
   assert.equal(r.code, 0, r.out); assert.deepEqual(snapshot(dir), before, "dry run changes nothing");
   assert.match(r.out, /never rewritten or deleted/);
-  r = run(APPLY, [ef, "--drop-excluded"]); assert.equal(r.code, 0, r.out);
+  r = applyEdits([ef, "--drop-excluded"]); assert.equal(r.code, 0, r.out);
   const after = snapshot(dir);
   const changed = Object.keys(after).filter(f => after[f] !== before[f]).map(f => path.relative(dir, f)).sort();
   assert.deepEqual(changed, ["docs/topic1.md", "docs/topic2.md"], "only the two markdown files change");
@@ -43,9 +42,9 @@ test("a second apply of the same export reports conflicts and changes nothing", 
   const doc = leaves.find(l => l.file === "docs/topic3.md" && l.text.includes("First rule"));
   const ef = path.join(cwd, "edits.json");
   fs.writeFileSync(ef, JSON.stringify({ version: 1, root: dir, edits: [edit(doc, "- changed once")], excluded: [], intents: [] }));
-  assert.equal(run(APPLY, [ef]).code, 0);
+  assert.equal(applyEdits([ef]).code, 0);
   const afterFirst = snapshot(dir);
-  const r = run(APPLY, [ef]);
+  const r = applyEdits([ef]);
   assert.equal(r.code, 1); assert.match(r.out, /CONFLICT/);
   assert.deepEqual(snapshot(dir), afterFirst);
 });
@@ -56,7 +55,7 @@ test("several edits in one file land correctly regardless of order and line shif
   const b = leaves.find(l => l.file === "docs/topic4.md" && l.text.includes("Second rule"));
   const ef = path.join(cwd, "edits.json");
   fs.writeFileSync(ef, JSON.stringify({ version: 1, root: dir, edits: [edit(a, "Intro one.\n\nIntro two.\n\nIntro three."), edit(b, "- only bullet")], excluded: [], intents: [] }));
-  assert.equal(run(APPLY, [ef]).code, 0);
+  assert.equal(applyEdits([ef]).code, 0);
   const txt = fs.readFileSync(path.join(dir, "docs/topic4.md"), "utf8");
   assert.ok(txt.includes("Intro three.") && txt.includes("- only bullet") && !txt.includes("Second rule"));
   assert.ok(txt.indexOf("Intro three.") < txt.indexOf("- only bullet"));
@@ -69,7 +68,7 @@ test("CRLF files keep their line endings", () => {
   fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace(/\n/g, "\r\n"));
   const ef = path.join(cwd, "edits.json");
   fs.writeFileSync(ef, JSON.stringify({ version: 1, root: dir, edits: [edit(doc, "- changed\n- two lines")], excluded: [], intents: [] }));
-  assert.equal(run(APPLY, [ef]).code, 0);
+  assert.equal(applyEdits([ef]).code, 0);
   const txt = fs.readFileSync(f, "utf8");
   assert.ok(txt.includes("- changed\r\n- two lines\r\n") && !/[^\r]\n/.test(txt));
 });

@@ -96,7 +96,7 @@ examples/dogfood/     whitebox run on its own repository (open whitebox.html)
 
 ## Development
 ```sh
-npm test    # 27 tests: segmenter, file selection, the whole pipeline with a fake agent, write-back safety
+npm test    # 30 tests: segmenter, file selection, the whole pipeline with a fake agent, write-back safety
 ```
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). Issues and ideas welcome.
 

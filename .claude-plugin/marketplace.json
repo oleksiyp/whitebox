@@ -1,0 +1,11 @@
+{
+  "name": "whitebox",
+  "owner": { "name": "Oleksiy Pylypenko" },
+  "plugins": [
+    {
+      "name": "whitebox",
+      "source": "./",
+      "description": "Make a project's insides visible: code and specs as one overseeable tree of plain-language pieces with an interactive editor."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [20, 22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --version && git --version
+      - run: npm test
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: plugin and marketplace manifests are valid JSON
+        run: |
+          jq -e '.name and .version and .description' .claude-plugin/plugin.json
+          jq -e '.name and .owner and (.plugins | length > 0)' .claude-plugin/marketplace.json
+      - name: SKILL.md has name and description front matter
+        run: |
+          head -5 skills/whitebox/SKILL.md | grep -q '^name: whitebox$'
+          head -5 skills/whitebox/SKILL.md | grep -q '^description: '
+      - name: scripts parse
+        run: for f in skills/whitebox/scripts/*.mjs; do node --check "$f"; done

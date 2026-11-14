@@ -1,0 +1,30 @@
+name: Bug report
+description: Something went wrong while building, viewing or writing back a whitebox
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste proprietary source code or specs. A minimal public example is ideal.
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where did it go wrong?
+      options: [split / file selection, agent outputs (check fails), merge, reshape, build / validate, editor, write-back (apply-edits), other]
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations: { required: true }
+  - type: textarea
+    id: output
+    attributes:
+      label: Command output
+      description: The relevant output of `whitebox.mjs split`, `check-all`, `validate.mjs` or `apply-edits.mjs`.
+      render: text
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "Node 22.3, macOS 15, Claude Code 2.x, project size (files / pieces)"

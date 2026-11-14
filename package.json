@@ -1,0 +1,11 @@
+{
+  "name": "whitebox",
+  "version": "0.1.0",
+  "description": "Turn a codebase or a pile of specs into one overseeable, editable tree of plain-language pieces (a Claude Code skill).",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "repository": "github:oleksiyp/whitebox",
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test test/*.test.mjs" }
+}

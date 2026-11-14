@@ -1,6 +1,6 @@
 export const meta = {
   name: 'whitebox',
-  description: 'Turn a split markdown spec into one tree with haiku agents: outline groups, verify, merge, describe, reshape wide branches',
+  description: 'whitebox: turn a split project (markdown and code) into one overseeable tree with haiku agents - outline, verify, merge, describe, reshape',
   phases: [
     { title: 'Outline', detail: 'one haiku chain per group, windows in order', model: 'haiku' },
     { title: 'Verify', detail: 'check-all, redo failing windows', model: 'haiku' },

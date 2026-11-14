@@ -2,7 +2,7 @@ node_modules/
 .DS_Store
 # whitebox working files and outputs when you run it inside this repo
 .whitebox*/
-whitebox.json
-whitebox.paths
-whitebox.html
-whitebox-edits.json
+/whitebox.json
+/whitebox.paths
+/whitebox.html
+/whitebox-edits.json

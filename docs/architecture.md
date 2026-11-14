@@ -46,7 +46,7 @@ done by a cheap model.
 8. **editor** - `build-editor.mjs` embeds the JSON into `editor.template.html`, a dependency-free page.
 
 ## Pieces and identity
-A piece is `file:start-end` (1-based, inclusive) plus its verbatim text. Pieces never overlap and together cover every
+A piece is `file:start-end` (1-based, inclusive) plus its verbatim text and a hash of that text taken at split time (`build` refuses to run if the source has changed since). Pieces never overlap and together cover every
 non-blank, non-heading line (for source files: every non-blank line). Headings of markdown become branch titles and are
 not pieces. A tree node is identified by its path; a leaf's identity is its range. That is what makes write-back safe:
 an edit says "lines 40-44 used to be exactly this text, replace them with that".
@@ -76,8 +76,8 @@ small built-in renderer (tables, lists, code, emphasis, links); a click switches
 collapsed branches, outline width) persists in `localStorage` per tree.
 
 ## Cost model
-Calibrated on two real runs: about 0.7k Haiku tokens per prose piece and 1.5k per code piece, plus ~25% for merge and reshape.
-`whitebox.mjs split` prints the estimate; real runs landed between 0.5x and 2.5x of it.
+Calibrated on four real runs (11 to 176 agents): an agent costs roughly 40-85k Haiku tokens whatever its job, so the estimate is
+`agents x 0.06M` with agents = windows x 1.2 + groups + pieces/150 + 6. `whitebox.mjs split` prints it; real runs landed between 0.5x and 2x.
 
 ## Known limits and ideas
 - Not incremental: after write-back or source changes, line ranges are stale and the project is re-split. Idea: reuse paths of

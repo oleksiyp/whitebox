@@ -19,6 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -38,6 +39,7 @@ const W = s => (s.match(/\S+/g) || []).length;
 const isHeading = l => /^ {0,3}#{1,6}\s+\S/.test(l);
 const fenceRe = /^ {0,3}(`{3,}|~{3,})/;
 const listRe = /^( {0,3})([-*+]|\d{1,3}[.)])\s+/;
+const H = s => crypto.createHash("sha1").update(s).digest("hex").slice(0, 10);
 const clean = s => s.replace(/[`*_]|\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/\s+/g, " ").trim();
 const txt = (L, s, e) => L.slice(s - 1, e).join("\n");
 function parseFile(L) {
@@ -197,8 +199,8 @@ function cmdSplit() {
     if (L.at(-1) === "") L.pop();
     const ext = (rel.split(".").pop() || "").toLowerCase(), lang = CODE_EXT[ext], first = pieces.length + 1;
     if (lang) {
-      for (const u of pack(L, codeUnits(L, lang), 200, 40, true)) pieces.push({ i: pieces.length + 1, f: fi, s: u.s, e: u.e, w: u.w, hp: "", k: "c", lang, sn: codeSnippet(L, u.s, u.e) });
-    } else for (const p of piecesOf(L)) pieces.push({ i: pieces.length + 1, f: fi, s: p.s, e: p.e, w: p.w, hp: p.hp, sn: snip(txt(L, p.s, p.e), 18) });
+      for (const u of pack(L, codeUnits(L, lang), 200, 40, true)) pieces.push({ i: pieces.length + 1, f: fi, s: u.s, e: u.e, w: u.w, hp: "", k: "c", lang, sn: codeSnippet(L, u.s, u.e), h: H(txt(L, u.s, u.e)) });
+    } else for (const p of piecesOf(L)) pieces.push({ i: pieces.length + 1, f: fi, s: p.s, e: p.e, w: p.w, hp: p.hp, sn: snip(txt(L, p.s, p.e), 18), h: H(txt(L, p.s, p.e)) });
     fl.push({ rel, bytes: Buffer.byteLength(raw), first, last: pieces.length, lang: lang || "md" });
   });
   if (report) {
@@ -241,18 +243,19 @@ function cmdSplit() {
 }
 
 /* ---------------- cost estimate ---------------- */
-// Calibrated on two real runs: ~0.7k haiku tokens per prose piece, ~1.5k per code piece (+ reshape ~25%).
+// Calibrated on four real runs (11 to 176 agents): a Haiku agent costs ~60k tokens whatever its job (0.04M-0.085M),
+// so the token estimate is agents x 0.06M. Agents = windows (+retries) + one describe per group + one reshape per wide branch
+// (about one per 150 pieces) + a few coordination agents.
 function estimateOf(pieces, G) {
   const code = pieces.filter(p => p.k === "c").length, doc = pieces.length - code;
-  const tokensM = (doc * 0.7 + code * 1.5) * 1.25 / 1000;
   const windows = G.reduce((a, g) => a + g.windows.length, 0);
-  const agents = windows + G.length + Math.round(pieces.length / 60) + 6;
+  const agents = Math.round(windows * 1.2 + G.length + pieces.length / 150 + 6);
   const longest = Math.max(...G.map(g => g.windows.length));
   const minutes = Math.round(longest * 3.2 + 6 + Math.min(10, pieces.length / 1500));
-  return { pieces: pieces.length, docPieces: doc, codePieces: code, windows, groups: G.length, agents, tokensM: +tokensM.toFixed(1), minutes };
+  return { pieces: pieces.length, docPieces: doc, codePieces: code, windows, groups: G.length, agents, tokensM: +(agents * 0.06).toFixed(1), minutes };
 }
 function printEstimate(e) {
-  console.log(`estimate: ~${e.agents} haiku agents, ~${e.tokensM}M tokens, ~${e.minutes} min wall-clock (${e.docPieces} doc + ${e.codePieces} code pieces, ${e.windows} windows). Rough: real runs landed within 0.5x-2.5x.`);
+  console.log(`estimate: ~${e.agents} haiku agents, ~${e.tokensM}M tokens, ~${e.minutes} min wall-clock (${e.docPieces} doc + ${e.codePieces} code pieces, ${e.windows} windows). Rough: real runs landed within 0.5x-2x.`);
 }
 function cmdEstimate() { printEstimate(readJ(wp("estimate.json"))); }
 
@@ -551,7 +554,9 @@ function cmdBuild() {
     });
   }
   const cache = {}; const lines_ = f => cache[f] ??= fs.readFileSync(path.join(P().root, f), "utf8").replace(/\r\n/g, "\n").split("\n");
-  (function w(n) { n.id = "n" + id++; if (n.children) n.children.forEach(w); else n.text = lines_(n.file).slice(n.start - 1, n.end).join("\n"); })(root);
+  let stale = 0; const staleFiles = new Set();
+  (function w(n) { n.id = "n" + id++; if (n.children) n.children.forEach(w); else { n.text = lines_(n.file).slice(n.start - 1, n.end).join("\n"); const pc = byRange.get(`${n.file}:${n.start}-${n.end}`); if (pc && pc.h && H(n.text) !== pc.h) { stale++; staleFiles.add(n.file); } } })(root);
+  if (stale && !argv.includes("--allow-stale")) die(`ERROR: ${stale} piece(s) in ${staleFiles.size} file(s) changed since the split (${[...staleFiles].slice(0, 5).join(", ")}${staleFiles.size > 5 ? ", ..." : ""}). The titles and descriptions were written for the old text. Re-run split (and the agents) on the current files, or pass --allow-stale to build anyway.`);
   const out = path.resolve(opt("--out", "whitebox.json"));
   fs.writeFileSync(out, JSON.stringify({ version: 1, root: P().root, title, tree: root }));
   // find-style flat listing: group;path;file:start-end;description

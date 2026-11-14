@@ -11,5 +11,6 @@ versioning: [SemVer](https://semver.org/).
   with a printed report and `--tests --config --include --exclude --max-kb` flags.
 - Code-to-specification descriptions for source pieces; code is never written back.
 - Verified markdown write-back (`apply-edits.mjs`) with dry run, conflict detection and CRLF preservation.
-- Cost estimate printed after `split`.
+- Cost estimate printed after `split` (calibrated on four real runs).
+- Integrity: every piece stores a hash of its text at split time; `build` refuses to run if the source changed since.
 - Claude Code plugin and marketplace manifests.

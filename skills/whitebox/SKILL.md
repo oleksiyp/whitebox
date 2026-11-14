@@ -19,8 +19,8 @@ groupings, summaries and the code-to-spec descriptions, and each agent output is
 runs until it prints `OK`. Agents never copy source text or line numbers, so the tree cannot corrupt the source.
 
 `S` = this skill's base directory (shown when the skill loads). `CLI` = `S/scripts/whitebox.mjs`.
-`W` = work directory, e.g. `.whitebox-myproject`, created in the current directory (keep it outside the analysed
-repo so that repo stays untouched). Node >= 18; git is optional.
+`W` = work directory, e.g. `.whitebox-myproject`, inside the *current working directory* (the Workflow tool needs it there)
+and outside the analysed repo, so that repo stays untouched. Node >= 18; git is optional.
 
 ## Workflow
 
@@ -35,9 +35,11 @@ changes files, so those are the user's decisions.
    Ask: proceed / change the selection (tests? config? other exclusions?) / cancel. Mention that the content of
    included files is processed by Haiku subagents; if the repo is proprietary or sensitive, say so and let them decide.
    Re-run split with other flags if they want changes. Do not start the workflow without a yes.
-3. **Workflow** - `node CLI groups-args --work W`, then the Workflow tool with `scriptPath: S/workflow.js` and those args as
-   a JSON value. Phases: Outline -> Verify -> Merge -> Describe -> Reshape. It is resumable. If the Workflow tool is
-   unavailable, see `references/troubleshooting.md` (manual fallback).
+3. **Workflow** - `node CLI groups-args --work W` prints the args. The Workflow tool only loads scripts from the working
+   directory, and the skill may live elsewhere (plugin or global install), so first `cp S/workflow.js W/workflow.js`, then call
+   the Workflow tool with `scriptPath: W/workflow.js` (absolute path) and those args as a JSON value.
+   Phases: Outline -> Verify -> Merge -> Describe -> Reshape. It is resumable. If the Workflow tool is unavailable, see
+   `references/troubleshooting.md` (manual fallback).
 4. **Verify yourself, never trust the summary** - read-only commands only: `node CLI status --work W`,
    `node CLI check-all --work W` (no failing windows), `node CLI reshape-count --work W` (count 0).
    Never re-run `apply-merge` or `reshape-list` to check: they rebuild or reset state.

@@ -1,6 +1,6 @@
 export const meta = {
   name: 'whitebox-reshape',
-  description: 'Re-run only the reshape phase: regroup branches wider than 9 into themed sub-branches with haiku agents',
+  description: 'whitebox: re-run only the reshape phase, regrouping branches wider than 9 into themed sub-branches with haiku agents',
   phases: [{ title: 'Reshape', detail: 'one haiku agent per wide branch, repeat until none', model: 'haiku' }],
 }
 // args = {work, cli}   (see workflow.js; run `apply-merge` first only if tree.paths does not exist yet)

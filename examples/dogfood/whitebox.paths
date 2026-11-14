@@ -1,0 +1,210 @@
+;Project Documentation;;Project documentation covering the overview, architecture, contributing rules, and release changelog.
+;Project Documentation/Release Changelog;;Changelog conventions and the initial release contents.
+1;Project Documentation/Release Changelog/Changelog Conventions;CHANGELOG.md:3-4;
+;Project Documentation/Release Changelog/Initial Release;;Initial release scope: splitting a project into pieces and selecting whole-project files.
+1;Project Documentation/Release Changelog/Initial Release/Project Splitting Into Pieces;CHANGELOG.md:8-9;
+1;Project Documentation/Release Changelog/Initial Release/Whole Project File Selection;CHANGELOG.md:10-15;
+;Project Documentation/Contributing Guide;;Contributing guide covering conduct, the zero dependency design, test setup, repository layout, ground rules, and pull requests.
+1;Project Documentation/Contributing Guide/Contributor Code Of Conduct;CODE_OF_CONDUCT.md:3-6;
+1;Project Documentation/Contributing Guide/Small Zero Dependency Tool;CONTRIBUTING.md:3-3;
+1;Project Documentation/Contributing Guide/Clone And Run Tests;CONTRIBUTING.md:6-9;
+1;Project Documentation/Contributing Guide/Repository Layout;CONTRIBUTING.md:12-15;
+;Project Documentation/Contributing Guide/Ground Rules;;Core contribution rules: exactness lives in code, and tests must be able to fail.
+1;Project Documentation/Contributing Guide/Ground Rules/Exactness Lives In Code;CONTRIBUTING.md:18-22;
+1;Project Documentation/Contributing Guide/Ground Rules/Tests That Can Fail;CONTRIBUTING.md:23-25;
+1;Project Documentation/Contributing Guide/Verify Changed Agent Prompts;CONTRIBUTING.md:28-30;
+1;Project Documentation/Contributing Guide/Focused Pull Requests;CONTRIBUTING.md:33-33;
+;Project Documentation/Project Overview;;Project overview explaining how a directory becomes a survey tree and the README placeholder.
+1;Project Documentation/Project Overview/Directory To Survey Tree;docs/architecture.md:3-4;
+1;Project Documentation/Project Overview/Draft Readme Placeholder;README.md:3-3;
+;Project Documentation/Architecture Guide;;Architecture guide describing the processing pipeline, piece identity, code inversion, editing, and cost limits.
+;Project Documentation/Architecture Guide/Exact Versus Fuzzy Split;;Division of work between exact scripted steps and fuzzy agent-driven steps, with responsibility matrix.
+1;Project Documentation/Architecture Guide/Exact Versus Fuzzy Split/Scripts Own Exact Work;docs/architecture.md:6-6;
+1;Project Documentation/Architecture Guide/Exact Versus Fuzzy Split/Responsibility Matrix;docs/architecture.md:8-13;
+1;Project Documentation/Architecture Guide/Exact Versus Fuzzy Split/Exact Fuzzy Duty Lists;docs/architecture.md:14-19;
+;Project Documentation/Architecture Guide/Processing Pipeline;;Stage sequence from splitting into groups through outline windows, merging, reshaping, and building the final tree.
+1;Project Documentation/Architecture Guide/Processing Pipeline/Stage Sequence Overview;docs/architecture.md:23-26;
+1;Project Documentation/Architecture Guide/Processing Pipeline/Splitting Into Groups;docs/architecture.md:28-30;
+1;Project Documentation/Architecture Guide/Processing Pipeline/Outline Agent Windows;docs/architecture.md:31-34;
+1;Project Documentation/Architecture Guide/Processing Pipeline/Outline Window Constraints;docs/architecture.md:35-36;
+1;Project Documentation/Architecture Guide/Processing Pipeline/Merging Group Outlines;docs/architecture.md:37-40;
+1;Project Documentation/Architecture Guide/Processing Pipeline/Reshaping Wide Branches;docs/architecture.md:41-42;
+1;Project Documentation/Architecture Guide/Processing Pipeline/Building Final Tree;docs/architecture.md:43-46;
+;Project Documentation/Architecture Guide/Pieces And Identity;;How pieces are cut from files and identified, using line ranges, markdown structure, and code heuristics.
+1;Project Documentation/Architecture Guide/Pieces And Identity/Exact Line Range Pieces;docs/architecture.md:49-52;
+1;Project Documentation/Architecture Guide/Pieces And Identity/Markdown Structural Cutting;docs/architecture.md:54-57;
+1;Project Documentation/Architecture Guide/Pieces And Identity/Code Cutting Heuristics;docs/architecture.md:58-58;
+1;Project Documentation/Architecture Guide/Code Inversion Into Specs;docs/architecture.md:61-64;
+;Project Documentation/Architecture Guide/Editing And Write Back;;Writing verified edits back to markdown files through a single file editor.
+1;Project Documentation/Architecture Guide/Editing And Write Back/Verified Markdown Write Back;docs/architecture.md:67-70;
+1;Project Documentation/Architecture Guide/Editing And Write Back/Single File Editor;docs/architecture.md:73-76;
+;Project Documentation/Architecture Guide/Cost And Limits;;Token cost model, incremental rebuild limits, and notes on behaviour changes.
+1;Project Documentation/Architecture Guide/Cost And Limits/Token Cost Model;docs/architecture.md:79-80;
+1;Project Documentation/Architecture Guide/Cost And Limits/Incremental Rebuild Limit;docs/architecture.md:83-86;
+1;Project Documentation/Architecture Guide/Cost And Limits/Behaviour Change Notes;docs/architecture.md:87-87;
+;Security And Privacy;;Security and privacy covering data flow to subagents, write safety, and vulnerability reporting.
+;Security And Privacy/Data Flow;;How data flows to Haiku subagents and which sensitive files are skipped.
+1;Security And Privacy/Data Flow/Haiku Subagent Data Flow;SECURITY.md:4-7;
+1;Security And Privacy/Data Flow/Sensitive Files Skipped;SECURITY.md:9-12;
+;Security And Privacy/Write Safety;;Rules limiting writes to explicit markdown edits and keeping work files to excerpts.
+1;Security And Privacy/Write Safety/Only Explicit Markdown Writes;SECURITY.md:15-17;
+1;Security And Privacy/Write Safety/Work Files Hold Excerpts;SECURITY.md:18-19;
+;Security And Privacy/Vulnerability Reporting;;How to report vulnerabilities privately.
+1;Security And Privacy/Vulnerability Reporting/Private Vulnerability Reports;SECURITY.md:22-22;
+;Skill Operation;;How the skill runs: work file formats, file selection, and troubleshooting failed or slow runs.
+;Skill Operation/Work File Formats;;Formats of the work directory files: contract, pieces schema, running summary, reshape marker, and editor exports.
+1;Skill Operation/Work File Formats/Work Directory Contract;skills/whitebox/references/formats.md:3-4;
+1;Skill Operation/Work File Formats/Pieces File Schema;skills/whitebox/references/formats.md:6-11;
+1;Skill Operation/Work File Formats/Running Summary File;skills/whitebox/references/formats.md:12-17;
+1;Skill Operation/Work File Formats/Reshape Applied Marker;skills/whitebox/references/formats.md:18-22;
+1;Skill Operation/Work File Formats/Editor Edits Export;skills/whitebox/references/formats.md:24-27;
+;Skill Operation/File Selection;;Which files get included or excluded, from git tracking, exclusion rules, size limits, and markdown cutting.
+1;Skill Operation/File Selection/Selection Purpose;skills/whitebox/references/selection.md:3-4;
+1;Skill Operation/File Selection/Git Tracked File Source;skills/whitebox/references/selection.md:6-9;
+1;Skill Operation/File Selection/Exclusion Reason Table;skills/whitebox/references/selection.md:11-18;
+1;Skill Operation/File Selection/Generated Large File Rules;skills/whitebox/references/selection.md:19-20;
+1;Skill Operation/File Selection/Opt In Tests Config;skills/whitebox/references/selection.md:22-23;
+1;Skill Operation/File Selection/Included Source Languages;skills/whitebox/references/selection.md:25-25;
+1;Skill Operation/File Selection/Include And Exclude Flags;skills/whitebox/references/selection.md:27-28;
+1;Skill Operation/File Selection/Markdown Piece Cutting Rules;skills/whitebox/references/selection.md:30-33;
+;Skill Operation/Troubleshooting Guide;;Fixes for common run problems such as failed window checks, redoing phases, slow editors, and stale ranges.
+;Skill Operation/Troubleshooting Guide/Manual Fallback Without Workflow;;Running the phases by hand, in order, when the workflow is unavailable.
+1;Skill Operation/Troubleshooting Guide/Manual Fallback Without Workflow/Run Phases By Hand;skills/whitebox/references/troubleshooting.md:3-5;
+1;Skill Operation/Troubleshooting Guide/Manual Fallback Without Workflow/Manual Agent Phase Order;skills/whitebox/references/troubleshooting.md:6-7;
+1;Skill Operation/Troubleshooting Guide/Window Check Failure;skills/whitebox/references/troubleshooting.md:9-10;
+;Skill Operation/Troubleshooting Guide/Redo Phases;;Redoing the reshape or merge phase after a bad result.
+1;Skill Operation/Troubleshooting Guide/Redo Phases/Redo Reshape Phase;skills/whitebox/references/troubleshooting.md:12-13;
+1;Skill Operation/Troubleshooting Guide/Redo Phases/Redo Merge Phase;skills/whitebox/references/troubleshooting.md:15-16;
+1;Skill Operation/Troubleshooting Guide/Slow Editor Large Trees;skills/whitebox/references/troubleshooting.md:18-19;
+1;Skill Operation/Troubleshooting Guide/Stale Ranges After Changes;skills/whitebox/references/troubleshooting.md:21-22;
+1;Skill Operation/Troubleshooting Guide/Cost Estimate Deviation;skills/whitebox/references/troubleshooting.md:24-25;
+;Skill Operation/Skill Overview;;Skill overview covering its header, purpose statement and design principles.
+;Skill Operation/Skill Overview/Skill Header;;Skill header with frontmatter delimiters, name and trigger description, and the title heading.
+3;Skill Operation/Skill Overview/Skill Header/Frontmatter Delimiters;skills/whitebox/SKILL.md:1-2;
+3;Skill Operation/Skill Overview/Skill Header/Name And Trigger Description;skills/whitebox/SKILL.md:3-3;
+3;Skill Operation/Skill Overview/Skill Header/Skill Title Heading;skills/whitebox/SKILL.md:4-4;
+;Skill Operation/Skill Overview/Purpose Statement;;Purpose statement describing the tree output summary and the code piece descriptions.
+3;Skill Operation/Skill Overview/Purpose Statement/Tree Output Summary;skills/whitebox/SKILL.md:8-11;
+3;Skill Operation/Skill Overview/Purpose Statement/Code Piece Descriptions;skills/whitebox/SKILL.md:12-14;
+;Skill Operation/Skill Overview/Design Principles;;Design principles dividing labour between model and script and using path placeholders.
+3;Skill Operation/Skill Overview/Design Principles/Division Of Labour;skills/whitebox/SKILL.md:16-19;
+3;Skill Operation/Skill Overview/Design Principles/Path Placeholders;skills/whitebox/SKILL.md:21-23;
+;Skill Operation/Skill Workflow;;Workflow steps covering analysis of the source material and delivery of results to the user.
+;Skill Operation/Skill Workflow/Analysis Steps;;Analysis steps for explaining ask points, splitting files, scope approval, parallel runs and tree validation.
+3;Skill Operation/Skill Workflow/Analysis Steps/Explain Ask Points;skills/whitebox/SKILL.md:27-29;
+3;Skill Operation/Skill Workflow/Analysis Steps/Split Source Files;skills/whitebox/SKILL.md:31-33;
+3;Skill Operation/Skill Workflow/Analysis Steps/Ask Scope Approval;skills/whitebox/SKILL.md:34-37;
+3;Skill Operation/Skill Workflow/Analysis Steps/Run Parallel Workflow;skills/whitebox/SKILL.md:38-40;
+3;Skill Operation/Skill Workflow/Analysis Steps/Verify Results Independently;skills/whitebox/SKILL.md:41-43;
+3;Skill Operation/Skill Workflow/Analysis Steps/Build And Validate Tree;skills/whitebox/SKILL.md:44-47;
+;Skill Operation/Skill Workflow/Delivery Steps;;Delivery steps for reviewing results with the user, writing edits back, and rerunning after write back.
+3;Skill Operation/Skill Workflow/Delivery Steps/Review Result With User;skills/whitebox/SKILL.md:48-49;
+3;Skill Operation/Skill Workflow/Delivery Steps/Write Edits Back;skills/whitebox/SKILL.md:50-54;
+3;Skill Operation/Skill Workflow/Delivery Steps/Rerun After Write Back;skills/whitebox/SKILL.md:55-55;
+;Skill Operation/Skill Guidance;;Guidance on how the skill authors output, including authoring rules and capability based window titles.
+;Skill Operation/Skill Guidance/Authoring Guidance;;Authoring rules for fixing failing window output and choosing capability based titles.
+3;Skill Operation/Skill Guidance/Authoring Guidance/Fix Failing Window Output;skills/whitebox/SKILL.md:59-62;
+3;Skill Operation/Skill Guidance/Authoring Guidance/Capability Based Titles;skills/whitebox/SKILL.md:66-68;
+;Command Line Tooling;;Command line tool that surveys code and specs, reshapes branches, and applies editor edits.
+;Command Line Tooling/Code Behaviour;;How the tool behaves on code: reshaping wide branches and applying editor edits to the tree.
+;Command Line Tooling/Code Behaviour/Reshape Wide Branches;;Reshaping overly wide branches into smaller groups through a standalone workflow or repeated rounds.
+1;Command Line Tooling/Code Behaviour/Reshape Wide Branches/Standalone Reshape Workflow;skills/whitebox/reshape.js:1-11;Regroups branches wider than nine children in a standalone run, applying the merge step first only when the tree file is missing.
+1;Command Line Tooling/Code Behaviour/Reshape Wide Branches/Reshape Round Loop;skills/whitebox/reshape.js:12-26;Repeats up to three rounds: counts branches wider than nine children, reshapes each with up to two attempts running concurrently, and stops early once none remain.
+;Command Line Tooling/Code Behaviour/Apply Editor Edits;;Applying edits exported from the HTML editor, with line verification and exit status reporting.
+1;Command Line Tooling/Code Behaviour/Apply Editor Edits/Command Line Interface;skills/whitebox/scripts/apply-edits.mjs:1-16;Reads an edits file exported from the editor with optional root directory, dry run and drop excluded options, and prints usage and fails when no file is given.
+1;Command Line Tooling/Code Behaviour/Apply Editor Edits/Verify Lines Before Writing;skills/whitebox/scripts/apply-edits.mjs:17-36;Applies edits per file from bottom to top, leaving a file untouched and reporting a conflict when its current lines differ from the recorded original text or edits overlap.
+1;Command Line Tooling/Code Behaviour/Apply Editor Edits/Results And Exit Status;skills/whitebox/scripts/apply-edits.mjs:37-38;Prints the number of changes applied and conflicts, marks dry runs as such, and exits with a failure status when any conflict occurred.
+;Command Line Tooling/Output And Validation;;Producing the editor page, outline listings and JSON, and checking source text and tree shape.
+;Command Line Tooling/Output And Validation/Editor Page;;Writing the standalone interactive HTML editor page for reviewing the tree.
+2;Command Line Tooling/Output And Validation/Editor Page/Write Standalone Editor;skills/whitebox/scripts/build-editor.mjs:1-10;Produces a standalone HTML editor file by embedding the outline JSON, with angle brackets escaped so the data cannot break the page, and reports the path written.
+;Command Line Tooling/Output And Validation/Check Source Text;;Verifying that tree leaves match source text, resolving base directories and covering every source line.
+2;Command Line Tooling/Output And Validation/Check Source Text/Resolve Source Base Directory;skills/whitebox/scripts/validate.mjs:1-10;Loads the outline file and resolves the project root against its location so that every leaf source file can be read from disk.
+2;Command Line Tooling/Output And Validation/Check Source Text/Match Leaf Text;skills/whitebox/scripts/validate.mjs:31-38;Checks that each leaf text equals the exact lines it cites in its source file, and reports leaves that are too long or start or end on a blank line.
+2;Command Line Tooling/Output And Validation/Check Source Text/Verify Line Coverage;skills/whitebox/scripts/validate.mjs:39-49;Checks that cited line ranges do not overlap within a file and that every non-blank content line is covered by a leaf, then prints a summary with any warnings and errors.
+;Command Line Tooling/Output And Validation/Check Tree Shape;;Verifying that every node in the tree has a valid structure.
+2;Command Line Tooling/Output And Validation/Check Tree Shape/Verify Node Structure;skills/whitebox/scripts/validate.mjs:11-30;Checks that every node has a unique id and a title of two to four words, flags empty branches, and warns about root width, depth above eight, and single-child branches.
+;Command Line Tooling/Output And Validation/Outline Tree;;Building the tree from rows and writing the JSON and text listing output.
+2;Command Line Tooling/Output And Validation/Outline Tree/Build Tree From Rows;skills/whitebox/scripts/whitebox.mjs:538-553;Builds the outline tree from the tree rows, giving each leaf the text of its cited lines and each node a unique id, titled from the project folder name.
+2;Command Line Tooling/Output And Validation/Outline Tree/Write Json And Listing;skills/whitebox/scripts/whitebox.mjs:554-565;Writes the outline JSON file and a flat listing with one line per node giving its group, path, file range and description, then reports the node and description counts.
+;Command Line Tooling/Parsing And Selection;;Reading markdown and source files, selecting files and turning them into bounded pieces.
+;Command Line Tooling/Parsing And Selection/Command Entry;;Describing the available commands and parsing their command-line options.
+2;Command Line Tooling/Parsing And Selection/Command Entry/Describe Commands;skills/whitebox/scripts/whitebox.mjs:1-20;Documents the command set and arguments of the tool and marks the script as an executable entry point.
+2;Command Line Tooling/Parsing And Selection/Command Entry/Parse Command Options;skills/whitebox/scripts/whitebox.mjs:21-42;Parses the command name, positional arguments and value options such as work directory, window size, group count and size limits, falling back to defaults when an option is absent.
+;Command Line Tooling/Parsing And Selection/Scan Document Blocks;;Parsing markdown blocks and nesting sections by heading level.
+2;Command Line Tooling/Parsing And Selection/Scan Document Blocks/Parse Markdown Blocks;skills/whitebox/scripts/whitebox.mjs:43-58;Splits a markdown file into blocks of headings, table rows, list items, fenced code and paragraphs, keeping each block's start and end line numbers.
+2;Command Line Tooling/Parsing And Selection/Scan Document Blocks/Nest Sections By Level;skills/whitebox/scripts/whitebox.mjs:59-71;Nests markdown blocks under the most recent heading of a shallower level, so each section keeps its heading path and its content.
+;Command Line Tooling/Parsing And Selection/Limit Piece Length;;Splitting overlong units and packing small units together to keep pieces a manageable size.
+2;Command Line Tooling/Parsing And Selection/Limit Piece Length/Split Long Units;skills/whitebox/scripts/whitebox.mjs:72-87;Splits an oversized unit into consecutive chunks of at most a word limit, breaking at line boundaries and preferring blank lines for code, and never produces an empty chunk.
+2;Command Line Tooling/Parsing And Selection/Limit Piece Length/Pack Small Units Together;skills/whitebox/scripts/whitebox.mjs:88-97;Merges adjacent small units into one piece while the combined length stays within the limit, so tiny sections do not become separate pieces.
+;Command Line Tooling/Parsing And Selection/Assemble Pieces;;Collecting the parsed pieces into their sections for the tree.
+2;Command Line Tooling/Parsing And Selection/Assemble Pieces/Collect Pieces Per Section;skills/whitebox/scripts/whitebox.mjs:98-107;Turns each section into pieces by heading path, packing its blocks within the length limit and keeping the section headings with its pieces.
+;Command Line Tooling/Parsing And Selection/Discover Files;;Finding project files by walking the directory tree and collecting tracked files.
+2;Command Line Tooling/Parsing And Selection/Discover Files/Walk Directory Tree;skills/whitebox/scripts/whitebox.mjs:108-108;Walks a directory tree recursively and lists every file path relative to the root directory.
+2;Command Line Tooling/Parsing And Selection/Discover Files/Collect Tracked Project Files;skills/whitebox/scripts/whitebox.mjs:119-135;Lists project files from git, including untracked files not ignored by git, and falls back to walking the folder when it is not a git repository.
+;Command Line Tooling/Parsing And Selection/Classify Files;;Defining which files are selected for the tree and filtering out excluded files.
+2;Command Line Tooling/Parsing And Selection/Classify Files/Define Selection Rules;skills/whitebox/scripts/whitebox.mjs:110-118;Decides by extension whether a file is documentation, code or config, and which directories, lockfiles, secrets and generated files are skipped by default.
+2;Command Line Tooling/Parsing And Selection/Classify Files/Filter Excluded Files;skills/whitebox/scripts/whitebox.mjs:136-153;Excludes lockfiles, minified and source-map files, unknown or binary types, oversized sources, secrets and generated code, and counts each reason for the report.
+;Command Line Tooling/Parsing And Selection/Segment Source Code;;Splitting source code into top-level units by tracking brace depth.
+2;Command Line Tooling/Parsing And Selection/Segment Source Code/Track Brace Depth;skills/whitebox/scripts/whitebox.mjs:154-173;Scans source lines while tracking bracket and parenthesis depth, ignoring comments and string contents, so that top-level declarations can be identified.
+2;Command Line Tooling/Parsing And Selection/Segment Source Code/Close Top Level Units;skills/whitebox/scripts/whitebox.mjs:174-184;Closes a code unit when depth returns to zero on a line that is not a closing bracket or chained continuation, keeping leading comments with the declaration that follows.
+;Command Line Tooling/Split And Windows;;Cutting pieces into balanced groups and windows for model tasks, then checking and reporting their results.
+;Command Line Tooling/Split And Windows/Build Pieces And Groups;;Segmenting selected files, forming balanced groups and cutting windows within each group.
+2;Command Line Tooling/Split And Windows/Build Pieces And Groups/Segment Selected Files;skills/whitebox/scripts/whitebox.mjs:186-204;Builds the list of pieces for each selected file by splitting its markdown sections or code units, giving each piece its file, line range and kind.
+2;Command Line Tooling/Split And Windows/Build Pieces And Groups/Form Balanced Groups;skills/whitebox/scripts/whitebox.mjs:205-218;Groups files into contiguous families and sorts them into roughly equal groups by byte count, keeping numbered variants of one file together.
+2;Command Line Tooling/Split And Windows/Build Pieces And Groups/Cut Windows Within Groups;skills/whitebox/scripts/whitebox.mjs:219-235;Cuts each group into consecutive windows of about the configured piece count, preferring file boundaries near the target so each window is a reasonable size.
+;Command Line Tooling/Split And Windows/Report Split Results;;Writing split artifacts and emitting group metadata after a split.
+2;Command Line Tooling/Split And Windows/Report Split Results/Write Split Artifacts;skills/whitebox/scripts/whitebox.mjs:236-257;Writes the pieces, groups and cost estimate files to the work directory and prints the file count, piece count, group sizes and estimated token cost.
+2;Command Line Tooling/Split And Windows/Report Split Results/Emit Group Metadata;skills/whitebox/scripts/whitebox.mjs:534-536;Prints the work directory, the command path and the list of groups as JSON so that other steps can address each group and window.
+;Command Line Tooling/Split And Windows/Read Window Outputs;;Loading the rows produced by each window.
+2;Command Line Tooling/Split And Windows/Read Window Outputs/Load Window Rows;skills/whitebox/scripts/whitebox.mjs:259-268;Reads a window output file and parses each row into an id and a path, returning nothing when the window has no output yet.
+;Command Line Tooling/Split And Windows/Print Window Task;;Printing the window task with branch vocabulary, code rules and the piece listing.
+2;Command Line Tooling/Split And Windows/Print Window Task/Collect Existing Branch Vocabulary;skills/whitebox/scripts/whitebox.mjs:270-281;Collects the branch paths already created by earlier windows of the group, with their piece counts, so that later windows reuse the same branch names.
+2;Command Line Tooling/Split And Windows/Print Window Task/Compose Code Rules Text;skills/whitebox/scripts/whitebox.mjs:282-291;Composes the rules for code pieces: each one also gets a plain-language specification of its behaviour that states what the system does, not how the code is written.
+2;Command Line Tooling/Split And Windows/Print Window Task/Print Task Rules;skills/whitebox/scripts/whitebox.mjs:293-304;Prints the numbered task rules for a window, including its id range, the path segment format, the depth limits and the requirement that every id appears exactly once.
+2;Command Line Tooling/Split And Windows/Print Window Task/Print Piece Listing;skills/whitebox/scripts/whitebox.mjs:305-322;Prints the instructions, the previous summary, the existing branches, and then each piece under a heading naming its file.
+;Command Line Tooling/Split And Windows/Check Window Rows;;Validating window row format and verifying that every full id is covered.
+2;Command Line Tooling/Split And Windows/Check Window Rows/Validate Window Row Format;skills/whitebox/scripts/whitebox.mjs:324-339;Validates each row of a window output: ids must be integers within the window range and unique, and each path must be a well-formed multi-segment title path.
+2;Command Line Tooling/Split And Windows/Check Window Rows/Verify Full Id Coverage;skills/whitebox/scripts/whitebox.mjs:340-350;Reports ids from the window range that have no row, requires the window summary file to exist, and rejects summaries longer than one hundred twenty words.
+;Command Line Tooling/Split And Windows/Check All Windows;;Reporting failing windows and overall progress across all windows.
+2;Command Line Tooling/Split And Windows/Check All Windows/Report Failing Windows;skills/whitebox/scripts/whitebox.mjs:352-359;Checks every window of every group and prints a JSON list of failing windows with their error details.
+2;Command Line Tooling/Split And Windows/Check All Windows/Report Overall Progress;skills/whitebox/scripts/whitebox.mjs:360-364;Walks all groups and windows and prints the progress of each group together with the overall count of finished windows.
+;Command Line Tooling/Themes And Reshaping;;Applying merges, describing branches and reshaping the tree when branches are too wide.
+;Command Line Tooling/Themes And Reshaping/Prepare Merge Instructions;;Printing the merge input and composing the rules for merging branches.
+2;Command Line Tooling/Themes And Reshaping/Prepare Merge Instructions/Print Merge Input;skills/whitebox/scripts/whitebox.mjs:365-380;Prints a merge listing for each group with its files, top-level branches, piece counts and sample sub-branches.
+2;Command Line Tooling/Themes And Reshaping/Prepare Merge Instructions/Compose Merge Rules;skills/whitebox/scripts/whitebox.mjs:382-392;Describes the merge rules: each group top segment maps to a new prefix, shared themes share one prefix, and the final tree has three to eight top-level branches.
+;Command Line Tooling/Themes And Reshaping/Apply Merge Mapping;;Reading a merge mapping file and remapping groups while resolving path collisions.
+2;Command Line Tooling/Themes And Reshaping/Apply Merge Mapping/Read Merge Mapping File;skills/whitebox/scripts/whitebox.mjs:393-396;Reads the merge mapping file into one mapping per group and top segment, and fails with a clear message when the file is missing.
+2;Command Line Tooling/Themes And Reshaping/Apply Merge Mapping/Remap Group Top Segments;skills/whitebox/scripts/whitebox.mjs:397-408;Replaces the top segment of every row with its mapped prefix, and fails when a group and segment has no mapping or has two.
+2;Command Line Tooling/Themes And Reshaping/Apply Merge Mapping/Resolve Path Collisions;skills/whitebox/scripts/whitebox.mjs:409-419;Resolves duplicate paths and paths that are prefixes of other paths by adding a numeric suffix, then writes the final tree paths and leaf descriptions.
+;Command Line Tooling/Themes And Reshaping/Branch Width Counts;;Counting children per branch and reporting how wide the tree is.
+2;Command Line Tooling/Themes And Reshaping/Branch Width Counts/Report Tree Width;skills/whitebox/scripts/whitebox.mjs:420-426;Reports the number of pieces and top-level branches, with a warning listing the branches that have more than nine children.
+2;Command Line Tooling/Themes And Reshaping/Branch Width Counts/Count Children Per Branch;skills/whitebox/scripts/whitebox.mjs:460-464;Counts the children of each branch in the tree, whether leaf or sub-branch, and returns the counts keyed by branch path.
+;Command Line Tooling/Themes And Reshaping/Describe Branch Text;;Printing description tasks, verifying branch descriptions and loading or saving them.
+2;Command Line Tooling/Themes And Reshaping/Describe Branch Text/Print Branch Description Task;skills/whitebox/scripts/whitebox.mjs:427-440;Prints a task listing each branch up to depth three with example children and asks for one-sentence descriptions written to the group description file.
+2;Command Line Tooling/Themes And Reshaping/Describe Branch Text/Verify Branch Descriptions;skills/whitebox/scripts/whitebox.mjs:441-452;Checks that every branch up to depth three of the group has a non-empty description, and fails listing the branch paths that lack one.
+2;Command Line Tooling/Themes And Reshaping/Describe Branch Text/Load And Save Descriptions;skills/whitebox/scripts/whitebox.mjs:453-459;Loads branch descriptions from the description folder into one map and saves the combined map back to a single file.
+;Command Line Tooling/Themes And Reshaping/Reshape Plan;;Listing wide branches and printing the reshape task with its composed rules.
+2;Command Line Tooling/Themes And Reshaping/Reshape Plan/List Wide Branches;skills/whitebox/scripts/whitebox.mjs:465-477;Lists branches with more than nine children sorted by child count, numbers them for reshaping, and moves earlier reshape results aside.
+2;Command Line Tooling/Themes And Reshaping/Reshape Plan/Print Reshape Task;skills/whitebox/scripts/whitebox.mjs:478-487;Prints the task for one wide branch, showing each child with its piece count or sample text, and the instructions for writing its grouping file.
+2;Command Line Tooling/Themes And Reshaping/Reshape Plan/Compose Reshape Rules;skills/whitebox/scripts/whitebox.mjs:488-499;Gives the rules for grouping the children of a wide branch into two to nine groups with unique titles, and reads the grouping file into child and group pairs.
+;Command Line Tooling/Themes And Reshaping/Reshape Results;;Validating reshape groups and remounting children under their new groups.
+2;Command Line Tooling/Themes And Reshaping/Reshape Results/Validate Reshape Groups;skills/whitebox/scripts/whitebox.mjs:500-514;Validates a grouping file: each child appears exactly once, group titles are two to four words and differ from every child title, and each group holds two to nine children.
+2;Command Line Tooling/Themes And Reshaping/Reshape Results/Remount Children Under Groups;skills/whitebox/scripts/whitebox.mjs:515-532;Moves the children of each wide branch under their group titles, deepest branches first, carrying descriptions along, and skips branches that have no grouping file.
+;Workflow And Testing;;Workflow orchestration and the test harness that exercises it, covering phases, fixtures and simulated agents.
+;Workflow And Testing/Workflow Orchestration;;Orchestration of workflow runs, centered on executing the declared phases in order.
+;Workflow And Testing/Workflow Orchestration/Phase Execution;;Declares workflow phases and runs them, outlining windows, redoing failures and splitting wide branches.
+4;Workflow And Testing/Workflow Orchestration/Phase Execution/Declare Workflow Phases;skills/whitebox/workflow.js:1-18;Declares the workflow name and description and five phases, Outline, Verify, Merge, Describe and Reshape, each run by a haiku model.
+4;Workflow And Testing/Workflow Orchestration/Phase Execution/Outline Each Window;skills/whitebox/workflow.js:20-37;Runs each window of every group as a haiku agent in order, retrying a failed window up to two times before reporting it as failed.
+4;Workflow And Testing/Workflow Orchestration/Phase Execution/Redo Failing Windows;skills/whitebox/workflow.js:38-62;Runs up to three verification rounds over all windows, redoing only failing windows in group and window order and stopping once none fail.
+4;Workflow And Testing/Workflow Orchestration/Phase Execution/Split Wide Branches;skills/whitebox/workflow.js:63-78;Repeats up to three rounds splitting branches wider than nine children, retrying each split up to two times and stopping when no branch is too wide.
+;Workflow And Testing/Test Harness;;Shared test infrastructure: support helpers, fixture projects and fake agents used across the test suite.
+;Workflow And Testing/Test Harness/Test Support;;Helpers for module setup and for running scripts without throwing, used by tests.
+4;Workflow And Testing/Test Harness/Test Support/Module Setup;test/helpers.mjs:1-11;Provides repository root, scripts directory and CLI path constants, plus a helper that creates uniquely named temporary directories.
+4;Workflow And Testing/Test Harness/Test Support/Run Script Without Throwing;test/helpers.mjs:13-18;Runs a script with arguments and returns its exit code and combined output, returning failure details instead of raising an error.
+;Workflow And Testing/Test Harness/Fixture Projects;;Fixture projects for tests: a git repository, a sample build and a Go greeting handler.
+4;Workflow And Testing/Test Harness/Fixture Projects/Create Git Project;test/helpers.mjs:20-37;Creates a temporary directory from a map of relative paths to contents, optionally writes an ignore file and initializes a git repository.
+4;Workflow And Testing/Test Harness/Fixture Projects/Build Sample Project;test/helpers.mjs:65-82;Builds a sample project of nine markdown topic files with numbered rules, plus Go and Python sources, large enough to produce at least three groups.
+4;Workflow And Testing/Test Harness/Fixture Projects/Go Greeting Handler Fixture;test/helpers.mjs:84-121;Provides a Go fixture whose Handle returns a fixed message for an empty name and a greeting otherwise, and whose Helper formats a value for logging.
+;Workflow And Testing/Test Harness/Fake Agents;;Simulated outline and description agents that stand in for real model calls during tests.
+4;Workflow And Testing/Test Harness/Fake Agents/Simulate Outline Agents;test/helpers.mjs:38-55;Writes stand-in outline summaries and valid piece lines for every window of each group, deriving short theme names from source file names.
+4;Workflow And Testing/Test Harness/Fake Agents/Simulate Description Agents;test/helpers.mjs:56-63;Writes a description file per group covering every branch path in the tree, each described by a generic sentence built from its path.

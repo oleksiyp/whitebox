@@ -111,3 +111,24 @@ test("merge validation: missing mapping and wrong number of top-level branches a
   fs.writeFileSync(path.join(work, "merge.txt"), lines.map(l => l.replace(/;[^;]*$/, ";Everything Together")).join("\n") + "\n");
   r = cli(["apply-merge", "--work", work]); assert.equal(r.code, 1); assert.match(r.out, /top-level branches/);
 });
+
+test("build refuses when the source changed after the split, unless --allow-stale", () => {
+  const { dir, cwd, work, groups } = pipeline();
+  cli(["apply-merge", "--work", work]); fakeDescriptions(work, groups);
+  const f = path.join(dir, "docs/topic1.md");
+  fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace("First rule of topic 1", "First rule, rewritten after the split"));
+  const json = path.join(cwd, "stale.json");
+  let r = cli(["build", "--work", work, "--out", json]);
+  assert.equal(r.code, 1); assert.match(r.out, /changed since the split/); assert.match(r.out, /docs\/topic1\.md/);
+  assert.ok(!fs.existsSync(json), "nothing is written");
+  r = cli(["build", "--work", work, "--out", json, "--allow-stale"]);
+  assert.equal(r.code, 0, r.out);
+});
+
+test("the cost estimate scales with agents and is printed after split", () => {
+  const { work } = pipeline();
+  const E = readJson(path.join(work, "estimate.json"));
+  assert.ok(E.agents >= E.windows && E.tokensM > 0 && E.minutes > 0);
+  assert.equal(E.tokensM, +(E.agents * 0.06).toFixed(1));
+  assert.match(cli(["estimate", "--work", work]).out, /estimate: ~\d+ haiku agents/);
+});

@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const SCRIPTS = path.join(ROOT, "skills", "whitebox", "scripts");
 
-export function tmp(prefix = "wb-") { return fs.mkdtempSync(path.join(os.tmpdir(), prefix)); }
+// canonical path: on Windows os.tmpdir() can be an 8.3 short name (RUNNER~1) while other tools report the long one
+export function tmp(prefix = "wb-") { return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), prefix))); }
 
 /**
  * Which implementation the suite exercises (the same tests run against all of them):

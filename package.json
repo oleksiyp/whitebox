@@ -6,6 +6,10 @@
   "license": "MIT",
   "private": true,
   "repository": "github:oleksiyp/whitebox",
-  "engines": { "node": ">=18" },
-  "scripts": { "test": "node --test test/*.test.mjs" }
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
 }

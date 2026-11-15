@@ -32,7 +32,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: shellcheck -s sh skills/whitebox/scripts/*.sh
+      - name: shellcheck
+        if: runner.os == 'Linux'
+        run: shellcheck -s sh skills/whitebox/scripts/*.sh test/docker/run.sh
       - name: functional suite against the sh port
         run: WHITEBOX_IMPL=sh npm test
       - name: parity with the Node reference

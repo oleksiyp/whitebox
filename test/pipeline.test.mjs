@@ -140,7 +140,7 @@ test("groups-args carries a runnable launcher command (`run`) for the workflow",
   assert.ok(path.isAbsolute(a.work) && path.isAbsolute(a.cli), "paths are absolute");
   assert.match(a.run, /^(node|sh|pwsh|powershell)\b.*whitebox\.(mjs|sh|ps1)"?$/);
   assert.ok(a.groups.length >= 1 && a.groups.every(g => g.g >= 1 && g.windows >= 1));
-  if (IMPL === "node") {   // only the node launcher can be executed from the host in every setup
+  if (IMPL === "node" && process.platform !== "win32") {   // only the node launcher can be executed from the host, through sh
     const r = spawnSync("sh", ["-c", `${a.run} status --work "${a.work}"`], { encoding: "utf8" });
     assert.equal(r.status, 0, r.stderr + r.stdout); assert.match(r.stdout, /windows done/);
   }

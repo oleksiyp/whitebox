@@ -30,7 +30,7 @@ test("applies markdown edits, ignores code pieces, never touches source code", (
   assert.match(r.out, /never rewritten or deleted/);
   r = applyEdits([ef, "--drop-excluded"]); assert.equal(r.code, 0, r.out);
   const after = snapshot(dir);
-  const changed = Object.keys(after).filter(f => after[f] !== before[f]).map(f => path.relative(dir, f)).sort();
+  const changed = Object.keys(after).filter(f => after[f] !== before[f]).map(f => path.relative(dir, f).split(path.sep).join("/")).sort();
   assert.deepEqual(changed, ["docs/topic1.md", "docs/topic2.md"], "only the two markdown files change");
   assert.ok(after[path.join(dir, "docs/topic1.md")].includes("First rule, EDITED.") && after[path.join(dir, "docs/topic1.md")].includes("brand new second line"));
   assert.ok(!after[path.join(dir, "docs/topic2.md")].includes("Second rule"), "excluded markdown piece removed");

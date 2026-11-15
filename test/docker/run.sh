@@ -14,4 +14,5 @@ img=$1; shift
 t=$(cd /tmp && pwd -P)
 if [ "$t" = /tmp ]; then mounts="-v /tmp:/tmp"; else mounts="-v $t:$t -v $t:/tmp"; fi
 # shellcheck disable=SC2086
-exec docker run --rm -i $mounts -v "$here:$here" -w "$cwd" "$img" "$@"
+# run as the caller: files the container creates in the shared temp dir must stay writable for the host-side test harness (Linux)
+exec docker run --rm -i --user "$(id -u):$(id -g)" $mounts -v "$here:$here" -w "$cwd" "$img" "$@"

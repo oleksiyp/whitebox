@@ -44,6 +44,7 @@ const listRe = /^( {0,3})([-*+]|\d{1,3}[.)])[ \t\r\n\f\v]+/;
 // Determinism for ports: whitespace is ASCII-only, sorting is bytewise, lowercasing is ASCII-only, so that awk and
 // PowerShell implementations can match this one exactly (JS defaults are Unicode/locale aware).
 String.prototype.trim = function () { return this.replace(/^[ \t\r\n\f\v]+|[ \t\r\n\f\v]+$/g, ""); };
+const posix = x => x.split(path.sep).join("/");   // names inside work files, trees and messages always use "/", also on Windows
 const cmp = (a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b));
 const lower = x => x.replace(/[A-Z]/g, c => String.fromCharCode(c.charCodeAt(0) + 32));
 const sha1 = buf => crypto.createHash("sha1").update(buf).digest("hex");
@@ -131,7 +132,7 @@ function collectProject(dir) {
   const withTests = argv.includes("--tests"), withCfg = argv.includes("--config");
   let rels, mode = "git";
   try { rels = execFileSync("git", ["-C", dir, "ls-files", "-co", "--exclude-standard", "-z"], { maxBuffer: 1 << 28, stdio: ["ignore", "pipe", "ignore"] }).toString().split("\0").filter(Boolean); }
-  catch { mode = "walk"; rels = walk(dir, [], true).map(f => path.relative(dir, f)); }
+  catch { mode = "walk"; rels = walk(dir, [], true).map(f => posix(path.relative(dir, f))); }
   const reasons = {}, samples = {}, included = [];
   const skip = (rel, why) => { reasons[why] = (reasons[why] || 0) + 1; (samples[why] ??= []).length < 3 && samples[why].push(rel); };
   for (const rel of rels) {
@@ -201,10 +202,10 @@ function cmdSplit() {
   if (pos.length === 1 && fs.statSync(pos[0]).isDirectory()) {
     ROOT = path.resolve(pos[0]); report = collectProject(ROOT); files = report.files;
   } else { files = pos.map(f => path.resolve(f)); ROOT = path.dirname(files[0]); while (!files.every(f => f.startsWith(ROOT + path.sep))) ROOT = path.dirname(ROOT); }
-  files.sort((a, b) => cmp(lower(path.relative(ROOT, a)), lower(path.relative(ROOT, b))));
+  files.sort((a, b) => cmp(lower(posix(path.relative(ROOT, a))), lower(posix(path.relative(ROOT, b)))));
   const pieces = [], fl = [];
   files.forEach((abs, fi) => {
-    const rel = path.relative(ROOT, abs), raw = fs.readFileSync(abs, "utf8"), L = raw.replace(/\r\n/g, "\n").split("\n");
+    const rel = posix(path.relative(ROOT, abs)), raw = fs.readFileSync(abs, "utf8"), L = raw.replace(/\r\n/g, "\n").split("\n");
     if (L.at(-1) === "") L.pop();
     const ext = lower(rel.split(".").pop() || ""), lang = CODE_EXT[ext], first = pieces.length + 1;
     if (lang) {

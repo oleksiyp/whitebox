@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-import { cli, buildEditor, validate, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions } from "./helpers.mjs";
+import { cli, buildEditor, validate, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions, SCRIPTS } from "./helpers.mjs";
 
 const files = d => fs.readdirSync(d, { recursive: true }).map(String).filter(f => !f.startsWith(".git") && fs.statSync(path.join(d, f)).isFile()).sort();
 const scriptOf = html => { const m = html.match(/<script>\n"use strict";[\s\S]*?<\/script>/); return m && m[0].replace(/^<script>|<\/script>$/g, ""); };
@@ -62,7 +62,7 @@ test("--artifact writes a page fragment for the Artifact tool; the default is a 
 });
 
 test("the editor page follows the artifact contract: both dark-theme selectors, downloads and send-to-Claude through capabilities", () => {
-  const t = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "..", "skills", "whitebox", "scripts", "editor.template.html"), "utf8");
+  const t = fs.readFileSync(path.join(SCRIPTS, "editor.template.html"), "utf8");
   assert.ok(/@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme=light\]\)/.test(t) && t.includes(":root[data-theme=dark]{"), "dark tokens under the media query and under [data-theme=dark]");
   assert.ok(t.includes('claude.use(n)') && t.includes('cap("downloads")') && t.includes('whitebox-edits/'), "uses the downloads and db capabilities");
   assert.ok(!/<a[^>]*download=/.test(t), "no inline download links (a sandboxed page cannot start downloads itself)");

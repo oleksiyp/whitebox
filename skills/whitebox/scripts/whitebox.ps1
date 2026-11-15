@@ -28,11 +28,10 @@ $script:WORK = WbResolve $workOpt
 $script:WIN = WbToNumber (Opt '--window' 220)
 $script:MAX = 80
 function Wp { $parts = New-Object 'System.Collections.Generic.List[string]'; $parts.Add($script:WORK); foreach ($a in $args) { $parts.Add([string]$a) }; return [System.IO.Path]::Combine($parts.ToArray()) }
+function WbFwd([string]$x) { if ([System.IO.Path]::DirectorySeparatorChar -eq [char]92) { return $x.Replace([string][char]92, '/') } return $x }
 function WbQ([string]$x) {
-  if ([System.IO.Path]::DirectorySeparatorChar -eq [char]92) {
-    if ([regex]::IsMatch($x, '[ \t"''();&<>|*?\[\]{}!~#`$^%,@]')) { return "'" + $x.Replace("'", "''") + "'" }
-    return $x
-  }
+  # paths shown to agents use "/" on every OS (see whitebox.mjs q()); quote with JSON-style double quotes only when needed
+  $x = WbFwd $x
   if ([regex]::IsMatch($x, '[ \t"''\\$&;()<>|*?\[\]{}!~#`]')) { return (WbJStr $x) }
   return $x
 }
@@ -1100,7 +1099,7 @@ function CmdApplyReshape {
 }
 function CmdGroupsArgs {
   $gs = WbNewList; foreach ($G in (GR)) { $gs.Add([ordered]@{ g = $G['g']; windows = $G['windows'].Count }) }
-  WbOut (WbToJson ([ordered]@{ work = $script:WORK; cli = (WbResolve $script:SelfPath); run = ($script:Launch + ' ' + $script:SELF); groups = $gs }) $false)
+  WbOut (WbToJson ([ordered]@{ work = (WbFwd $script:WORK); cli = (WbFwd (WbResolve $script:SelfPath)); run = ($script:Launch + ' ' + $script:SELF); groups = $gs }) $false)
 }
 
 # ---------------- build ----------------

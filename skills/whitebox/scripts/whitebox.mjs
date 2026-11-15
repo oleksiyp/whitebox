@@ -35,7 +35,8 @@ const die = m => { console.error(m); process.exit(1); };
 
 /* ---------------- segmenter (deterministic) ---------------- */
 // Everything printed for agents is absolute and quoted when needed, so an agent's working directory can never matter.
-const q = x => (/[ \t"'\\$&;()<>|*?\[\]{}!~#`]/.test(x) ? JSON.stringify(x) : x);
+// Paths shown to agents use "/" on every OS (Git Bash, PowerShell, cmd, Node and .NET all accept it; a bare "\" would be eaten by bash).
+const q = x => { x = x.split(path.sep).join("/"); return /[ \t"'\\$&;()<>|*?\[\]{}!~#`]/.test(x) ? JSON.stringify(x) : x; };
 const SELF = q(path.resolve(process.argv[1]));
 const W = s => (s.match(/[^ \t\r\n\f\v]+/g) || []).length;
 const isHeading = l => /^ {0,3}#{1,6}[ \t\r\n\f\v]+[^ \t\r\n\f\v]/.test(l);
@@ -546,7 +547,7 @@ function cmdApplyReshape() {
 }
 
 function cmdGroupsArgs() {
-  console.log(JSON.stringify({ work: WORK, cli: path.resolve(process.argv[1]), run: "node " + SELF, groups: GR().map(g => ({ g: g.g, windows: g.windows.length })) }));
+  console.log(JSON.stringify({ work: WORK.split(path.sep).join("/"), cli: path.resolve(process.argv[1]).split(path.sep).join("/"), run: "node " + SELF, groups: GR().map(g => ({ g: g.g, windows: g.windows.length })) }));
 }
 
 /* ---------------- build ---------------- */

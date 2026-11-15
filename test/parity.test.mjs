@@ -39,7 +39,9 @@ const text = f => fs.readFileSync(f, "utf8");
 /** printed commands name the launcher and the script and contain absolute paths of this run: normalise those, nothing else */
 const norm = (t, ctx, who) => {
   let x = t.replace(/\r\n/g, "\n");
-  if (who === "B") x = x.split(ctx.cwdB).join(ctx.cwdA);
+  const fwd = s => s.split("\\").join("/");
+  if (who === "B") x = fwd(x.split(ctx.cwdB).join(ctx.cwdA)).split(fwd(ctx.cwdB)).join(fwd(ctx.cwdA));
+  else x = fwd(x);
   return x.replace(/\b(?:node|sh|bash|dash|pwsh|powershell)\b(?: -[A-Za-z]+(?: (?!\/)[A-Za-z]+)?)* (\S*whitebox)\.(?:mjs|sh|ps1)/g, "RUN $1.X").replace(/whitebox\.(?:mjs|sh|ps1)/g, "whitebox.X");
 };
 function both(args, ctx, label) {

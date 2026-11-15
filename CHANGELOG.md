@@ -3,19 +3,30 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog](https://keepachangelog.com/),
 versioning: [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [0.3.0] - 2026-11-15
 ### Added
 - **POSIX `sh` + `awk` and PowerShell ports** of all four tools (`whitebox`, `apply-edits`, `validate`, `build-editor`), so whitebox runs with nothing
   to install: macOS/Linux with only the base system, Windows with the PowerShell that ships with it. The skill picks Node, else `sh`, else PowerShell.
-  Verified identical to the Node reference on random projects (messages, work files, JSON, editor page, bytes written back) on macOS, Debian
-  (dash + mawk), Alpine (busybox) and PowerShell 7; Windows PowerShell 5.1 and Windows are checked in CI.
+  Each port is held identical to the Node reference by the same test suite plus differential parity tests on random projects (printed messages, work files,
+  JSON, editor page, bytes written back). CI runs them on Ubuntu (dash), macOS (BSD awk), Debian (dash + mawk), Alpine (busybox) and on real Windows
+  (Windows PowerShell 5.1 and PowerShell 7); the Node reference also runs on Windows.
 - `groups-args` prints `run` (the full launcher command) and the workflows use it instead of hard-coding `node`.
 - `.gitattributes` keeps LF line endings in Windows checkouts.
 
+### Changed
+- Paths printed for agents (and the `work` / `cli` fields of `groups-args`) use `/` on every OS and are quoted only when they contain whitespace or shell-special
+  characters. A bare `\` path is eaten by Git Bash; `/` works in Git Bash, PowerShell, cmd, Node and .NET.
+
 ### Fixed
+- Windows: relative file names inside `pieces.json`, the tree and messages used backslashes (`docs\guide.md`); they always use `/` now.
 - Test directories (`tests/`, `test/`, `__tests__/`, `e2e/`) were never skipped by default because of a regex precedence slip; only test *file names* were.
 - `validate` trimmed Unicode whitespace, unlike the rest of the tool; it is ASCII-only now.
 - `split` on a selection that contains no pieces printed `~-Infinity min` and wrote empty work files; it now stops with `ERROR: nothing to analyse`.
+
+### Known limits of the ports
+- Edge cases outside what the tests generate are documented in `docs/porting-notes-sh.md` and `docs/porting-notes-ps.md` (invalid UTF-8, lone UTF-16 surrogates, file names
+  containing a newline). Where the reference would crash with a stack trace, the ports print a one-line error with the same exit code.
+- The `sh` port is slower than Node on macOS (`split` took 14-25 s on a 12,000-piece project, against about 0.4 s for Node).
 
 ## [0.2.0] - 2026-11-14
 ### Fixed

@@ -742,7 +742,7 @@ function cmdBuild(   i, k, S, ns, d, par, seg, acc, node, c, dsc, rg, a, b, lc, 
     ss = ""; for (i = 1; i <= nstf && i <= 5; i++) ss = ss (i > 1 ? ", " : "") STL[i]
     die("ERROR: " stale " piece(s) in " nstf " file(s) changed since the split (" ss (nstf > 5 ? ", ..." : "") "). The titles and descriptions were written for the old text. Re-run split (and the agents) on the current files, or pass --allow-stale to build anyway.")
   }
-  outp = resolvep(ENVIRON["WB_OUTARG"] == "" ? "whitebox.json" : ENVIRON["WB_OUTARG"])
+  outp = resolvep(ENVIRON["WB_OUTARG"] == "" ? WORK "/whitebox.json" : ENVIRON["WB_OUTARG"])
   if (system("test -d " shq(dirnamep(outp))) != 0) die("Error: ENOENT: no such file or directory, open '" outp "'")
   printf "{\"version\":1,\"root\":%s,\"title\":%s,\"tree\":", jstr(PROOT), jstr(title) > outp
   emitJson(root, outp)

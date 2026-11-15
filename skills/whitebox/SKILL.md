@@ -1,12 +1,13 @@
 ---
 name: whitebox
-description: Turn a codebase or a pile of markdown specs into a whitebox - one overseeable tree of small titled pieces with plain-language descriptions - and review it in an interactive HTML editor where branches and pieces can be included, excluded and edited. For source code, each piece is inverted into a specification statement (what it does, not how), so a reader sees the system instead of the code. Use this whenever the user wants to understand, survey, map or summarise a project or a large spec, asks "what is in this repo / these specs", wants to prune or restructure a spec, wants a compact context pack of a codebase, or wants to turn code back into requirements - even if they never say "whitebox".
+description: Turn a codebase or a pile of markdown specs into a whitebox - one overseeable tree of small titled pieces with plain-language descriptions - and review it in an interactive page (published as an Artifact) where branches and pieces can be included, excluded and edited. For source code, each piece is inverted into a specification statement (what it does, not how), so a reader sees the system instead of the code. Use this whenever the user wants to understand, survey, map or summarise a project or a large spec, asks "what is in this repo / these specs", wants to prune or restructure a spec, wants a compact context pack of a codebase, or wants to turn code back into requirements - even if they never say "whitebox".
 ---
 
 # whitebox
 
 Makes a project's insides visible. Output: a tree of 2-4 word titles, branches with a one-line description,
-leaves that keep exact `file:start-end` line ranges, plus a self-contained HTML editor.
+leaves that keep exact `file:start-end` line ranges, plus an interactive editor page. The result is published as a
+private **Artifact**; no file is ever created in the user's project.
 
 - **Markdown pieces** show as rendered markdown and can be edited; edits can be written back to the files.
 - **Code pieces** show a plain-language *description* (an inversion of the code into a requirement); the code
@@ -18,13 +19,18 @@ verbatim text, validation, embedding, write-back). Cheap Haiku agents (Workflow 
 groupings, summaries and the code-to-spec descriptions, and each agent output is checked by a script the agent
 runs until it prints `OK`. Agents never copy source text or line numbers, so the tree cannot corrupt the source.
 
-`S` = this skill's base directory (shown when the skill loads).
-`W` = work directory. Use `<scratchpad>/whitebox-<project>` when the system prompt names a scratchpad directory (scratch files
-never touch the user's directories and need no permission prompts); otherwise `.whitebox-<project>` in the current directory,
-which must not be inside the analysed repo. Always use **absolute paths**: the commands print absolute paths for agents, so a
-different working directory can never break a run.
-The deliverables (`whitebox-<project>.json`, `.html`, `.paths`) go to the current directory unless the user says otherwise,
-because the scratchpad is temporary; tell the user where they are. git is optional (without it files are found by walking the directory).
+## Where files go (hard rule)
+
+**Never create a file in the user's project or in the current directory.** Not a work directory, not `whitebox.json`, not the page.
+Everything temporary lives in the **scratchpad** directory named in the system prompt; the result is an **Artifact**.
+
+- `S` = this skill's base directory (shown when the skill loads).
+- `W` = `<scratchpad>/whitebox-<project>`. If the system prompt names no scratchpad, make one outside the project with
+  `mktemp -d "${TMPDIR:-/tmp}/whitebox-XXXXXX"` (or the platform's temp directory) and say so. The tools refuse to run without `--work`,
+  so a forgotten flag cannot drop files into a project.
+- Always use **absolute paths** (the commands print absolute paths for agents, so a different working directory never matters).
+- The only files this skill may ever change in the project are the markdown files the user explicitly asks to have edited (step 8).
+- git is optional (without it files are found by walking the directory).
 
 ## Runtime: nothing to install
 
@@ -60,18 +66,28 @@ changes files, so those are the user's decisions.
 4. **Verify yourself, never trust the summary** - read-only commands only: `CLI status --work W`,
    `CLI check-all --work W` (no failing windows), `CLI reshape-count --work W` (count 0).
    Never re-run `apply-merge` or `reshape-list` to check: they rebuild or reset state.
-5. **Build** - `CLI build --work W --out <cwd>/whitebox-<project>.json`, then `VALIDATE <that json>`
-   (0 errors; warnings are informational), then `EDITOR <that json> <cwd>/whitebox-<project>.html`.
-   Open the HTML. Tell the user: filter with `/`, click a card to edit, In/Out pills include or exclude, the Changes
-   drawer exports. Be honest about quality: titles and descriptions are model-written and only spot-checked.
-6. **Looking at the result with the user** - offer to read branches aloud, answer questions from the tree, or
-   export "Context .md" (descriptions for code, text for docs) as a compact context pack.
-7. **Write back (markdown only)** - the user clicks *Download edits* (`whitebox-edits.json`). Run
-   `APPLY whitebox-edits.json --dry-run`, show it, **ASK** before applying for real.
-   `--drop-excluded` deletes excluded *markdown* pieces: ASK separately, it is destructive. Each change is verified
-   against the original lines; on a mismatch the file is skipped and reported. Behaviour-change notes on code
-   are never applied: hand them to the user as a work list (offer to implement them as a normal coding task).
-8. After write-back the line ranges are stale; re-run from step 1 before editing again.
+5. **Build** - `CLI build --work W` (writes `W/whitebox.json` and `W/whitebox.paths`), then `VALIDATE W/whitebox.json`
+   (0 errors; warnings are informational), then the page:
+   `EDITOR W/whitebox.json W/<project>.html --artifact --title "<Project> Whitebox"` (`--artifact` writes the fragment the Artifact tool wraps; the
+   title is a 2-4 word name, e.g. "Billing Whitebox"). Check the size: an Artifact page must be **16 MB or smaller**
+   (a 14,000-piece tree is about 9 MB). If it is bigger, **ASK** the user to narrow the selection (`--exclude`) and re-run from step 1.
+6. **Publish as an Artifact.** Load the `artifact-design` and `artifact-capabilities` skills first (the Artifact tool requires them), then call the
+   Artifact tool: `file_path: W/<project>.html`, `capabilities: {"downloads": true, "db": {}}`, `icon: "tree"`, and a one-sentence `description`
+   (for example "Plain-language map of the billing service: 8 areas, 480 pieces."). The page uses `downloads` to save exports (a sandboxed page cannot
+   start downloads itself) and `db` to send edits back to this session. The Artifact is private by default; it contains verbatim excerpts of the
+   user's files, so never share or publish it further without asking. If the Artifact tool is unavailable, say so and give the user the path of
+   the page in the scratchpad (standalone, still not in the project). Tell the user: filter with `/`, click a card to edit, In/Out pills include or
+   exclude, the Changes drawer sends or exports. Be honest about quality: titles and descriptions are model-written and only spot-checked.
+7. **Looking at the result with the user** - offer to read branches aloud, answer questions from the tree, or export "Context .md" (descriptions
+   for code, text for docs) as a compact context pack (the page saves it through the viewer's download prompt).
+8. **Write back (markdown only).** The user presses **Send edits to Claude** in the page. Read them with the `ArtifactData` tool: `list` the collection
+   `whitebox-edits`, take the `meta` document (`n` parts) and the documents `c0000`... in order of `i`, concatenate their `part` strings into
+   `W/whitebox-edits.json` (scratchpad). If the page could not send (viewer signed out), the user used *Download edits*: ask where the file is.
+   Then `APPLY <edits.json> --dry-run`, show it, **ASK** before applying for real. `--drop-excluded` deletes excluded *markdown* pieces: ASK
+   separately, it is destructive. Each change is verified against the original lines; on a mismatch the file is skipped and reported.
+   Behaviour-change notes on code are never applied: hand them to the user as a work list (offer to implement them as a normal coding
+   task). Afterwards delete the `whitebox-edits` documents with `ArtifactData`.
+9. After write-back the line ranges are stale; re-run from step 1 before editing again (a new Artifact version of the same page is fine).
 
 ## When something goes wrong
 
@@ -84,4 +100,4 @@ changes files, so those are the user's decisions.
 
 - Titles and groups for code describe capabilities ("Retry Failed Deployments"), not files, packages or functions.
 - Be upfront about cost and about what the selection rules skipped; a silent omission reads as full coverage.
-- Keep the user's repo clean: all scratch output lives in `W` and the generated files next to it.
+- Keep the user's repo clean: scratch output lives in `W` in the scratchpad, the result is an Artifact, and nothing else is written.

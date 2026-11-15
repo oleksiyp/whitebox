@@ -108,6 +108,13 @@ function fullParity(T, files, label) {
   assert.equal(buildEditor([jA, hA], { cwd: ctx.cwdA }).code, 0); assert.equal(buildEditor([jB, hB], { cwd: ctx.cwdB, impl: T }).code, 0);
   const [tA, restA] = embedded(mask(text(hA))), [tB, restB] = embedded(mask(text(hB)));
   eq(tB, tA, `${label}: embedded tree`); assert.equal(restB, restA, `${label}: editor page outside the tree`);
+  // the Artifact fragment form with a title (special characters escaped)
+  const fA = path.join(ctx.cwdA, "f.html"), fB = path.join(ctx.cwdB, "f.html"), flags = ["--artifact", "--title", "Sample <Proj> & Whitebox"];
+  assert.equal(buildEditor([jA, fA, ...flags], { cwd: ctx.cwdA }).code, 0); assert.equal(buildEditor([jB, fB, ...flags], { cwd: ctx.cwdB, impl: T }).code, 0);
+  const [ftA, frA] = embedded(mask(text(fA))), [ftB, frB] = embedded(mask(text(fB)));
+  eq(ftB, ftA, `${label}: artifact fragment tree`); assert.equal(frB, frA, `${label}: artifact fragment outside the tree`);
+  const noArgs = buildEditor([jA], { cwd: ctx.cwdA }), noArgsB = buildEditor([jB], { cwd: ctx.cwdB, impl: T });
+  assert.equal(noArgsB.code, noArgs.code, `${label}: build-editor usage exit code`); assert.equal(noArgsB.out, noArgs.out, `${label}: build-editor usage message`);
   assert.ok(!text(hA).includes("</script><"), "sanity");
   // stale source
   const first = Object.keys(files).find(f => /\.(md|go|py|js)$/.test(f)); const old = fs.readFileSync(path.join(dir, first), "utf8");

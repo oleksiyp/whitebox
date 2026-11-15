@@ -72,8 +72,8 @@ run_awk() { # run_awk PROGRAM... (files of lib/, environment already prepared)
   awk -f "$LIB/bytes.awk" -f "$LIB/common.awk" "$@"
 }
 
-WORKARG=$(opt --work .whitebox "$@")
-WORK=$(abspath "$WORKARG")
+WORKARG=$(opt --work "" "$@")
+WORK=$(abspath "${WORKARG:-.}")
 positionals "$@"
 
 # ---- split ----
@@ -127,6 +127,10 @@ cmd_wb() {
   run_awk json.awk wb.awk </dev/null
 }
 
+case $cmd in
+  split|window|check|check-all|status|merge-input|apply-merge|describe-input|check-desc|reshape-list|reshape-count|reshape-input|check-reshape|apply-reshape|groups-args|estimate|build)
+    [ -n "$WORKARG" ] || die "ERROR: --work DIR is required: put work files in a scratch directory outside the project (for example the scratchpad)" ;;
+esac
 case $cmd in
   split) cmd_split "$@" ;;
   window|check|check-all|status|merge-input|apply-merge|describe-input|check-desc|reshape-list|reshape-count|reshape-input|check-reshape|apply-reshape|groups-args|estimate|build) cmd_wb "$@" ;;

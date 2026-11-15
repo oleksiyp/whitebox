@@ -40,17 +40,19 @@ Node >= 18, or POSIX `sh` + `awk` (macOS, Linux, Git Bash, WSL), or PowerShell (
 documented in [`references/troubleshooting.md`](skills/whitebox/references/troubleshooting.md)).
 
 ## Use
-In Claude Code, from any directory (scratch files go to Claude's scratchpad, the finished `whitebox-<project>.html` and `.json` to the current directory):
+In Claude Code, from any directory:
 ```text
 /whitebox ~/dev/some-project
 ```
-or just say "map this repo", "what is in these specs?", "turn this code back into requirements". The skill then:
+or just say "map this repo", "what is in these specs?", "turn this code back into requirements". Nothing is ever written into the project or the
+current directory: scratch files live in Claude's scratchpad and the result is published as a **private Artifact** (an interactive page in
+claude.ai). The skill then:
 
 1. **splits** the project (seconds, no LLM) and shows you what it selected and what it skipped, with a cost estimate;
 2. **asks you** to confirm scope and cost (tests? config? something sensitive?) before spending anything;
 3. runs the **Haiku workflow** (outline, verify, merge, describe, reshape) in the background;
-4. **verifies** the result with scripts, builds `whitebox.json` / `whitebox.html`, and opens the editor;
-5. on request, **writes your markdown edits back** after a dry run you approve.
+4. **verifies** the result with scripts, builds the editor page, and publishes it as the Artifact;
+5. on request, **writes your markdown edits back**: press *Send edits to Claude* in the page, review the dry run, approve.
 
 ## What gets analysed
 In a git repository: tracked and untracked files, honouring `.gitignore`. On top of that it skips hidden files, `node_modules`,
@@ -74,7 +76,7 @@ Small projects (a few dozen files) cost a fraction of a million tokens and a few
 ## Privacy
 **The text of every selected file is sent to the model provider** by the subagents, exactly as if you had asked Claude Code to read
 it. The skill makes you confirm the selection first. Secret-looking files are skipped, but that is a heuristic: a secret pasted into
-a source file is not detected. Work files and generated pages contain verbatim excerpts, so do not commit them for private projects.
+a source file is not detected. The Artifact (private by default) and the scratch files contain verbatim excerpts of your files; do not share the Artifact for a private project.
 See [`SECURITY.md`](SECURITY.md).
 
 ## Limitations

@@ -14,10 +14,16 @@ versioning: [SemVer](https://semver.org/).
 - `.gitattributes` keeps LF line endings in Windows checkouts.
 
 ### Changed
+- **Nothing is written into the user's project or the current directory.** `--work DIR` is now required (no implicit `.whitebox` folder), `build` writes into the
+  work directory by default, and `build-editor` requires both file arguments. The skill keeps scratch files in Claude's scratchpad and publishes the result as a
+  private **Artifact**; `build-editor --artifact --title NAME` writes the fragment the Artifact tool wraps. Inside an artifact the page saves exports through the
+  `downloads` capability (a sandboxed page cannot start downloads) and offers *Send edits to Claude* through the `db` capability, so write-back needs no file
+  in the project or in Downloads.
 - Paths printed for agents (and the `work` / `cli` fields of `groups-args`) use `/` on every OS and are quoted only when they contain whitespace or shell-special
   characters. A bare `\` path is eaten by Git Bash; `/` works in Git Bash, PowerShell, cmd, Node and .NET.
 
 ### Fixed
+- The PowerShell port's page builder did not escape `<` in the embedded tree (a spec containing `</script>` would have broken the page); parity tests now include such text.
 - Windows: relative file names inside `pieces.json`, the tree and messages used backslashes (`docs\guide.md`); they always use `/` now.
 - Test directories (`tests/`, `test/`, `__tests__/`, `e2e/`) were never skipped by default because of a regex precedence slip; only test *file names* were.
 - `validate` trimmed Unicode whitespace, unlike the rest of the tool; it is ASCII-only now.

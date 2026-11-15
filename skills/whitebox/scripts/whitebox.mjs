@@ -26,7 +26,7 @@ const cmd = argv[0];
 const VAL = ["--work", "--out", "--window", "--groups", "--max-kb", "--include", "--exclude"];
 const opt = (n, d) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : d);
 const pos = argv.slice(1).filter((a, i) => !a.startsWith("--") && !VAL.includes(argv[i]));
-const WORK = path.resolve(opt("--work", ".whitebox"));
+const WORKARG = opt("--work", null), WORK = WORKARG ? path.resolve(WORKARG) : null;   // no implicit work directory: nothing is ever created in the current directory by accident
 const WIN = +opt("--window", 220);
 const MAX = 80;
 const wp = (...p) => path.join(WORK, ...p);
@@ -464,7 +464,7 @@ function cmdCheckDesc() {
 }
 
 /* ---------------- reshape wide branches ---------------- */
-const SELFREL = q(WORK);
+const SELFREL = WORK ? q(WORK) : "";
 function loadDesc() {
   const all = wp("desc", "_all.txt"), m = new Map();
   const files = fs.existsSync(all) ? [all] : fs.existsSync(wp("desc")) ? fs.readdirSync(wp("desc")).filter(f => /^g\d+\.txt$/.test(f)).sort().map(f => wp("desc", f)) : [];
@@ -570,7 +570,7 @@ function cmdBuild() {
   const fresh = new Map(); const isFresh = f => { if (!fresh.has(f)) { const want = fileHash.get(f); fresh.set(f, !want || sha1(fs.readFileSync(path.join(P().root, f))) === want); } return fresh.get(f); };
   (function w(n) { n.id = "n" + id++; if (n.children) n.children.forEach(w); else { n.text = lines_(n.file).slice(n.start - 1, n.end).join("\n"); if (!isFresh(n.file)) { stale++; staleFiles.add(n.file); } } })(root);
   if (stale && !argv.includes("--allow-stale")) die(`ERROR: ${stale} piece(s) in ${staleFiles.size} file(s) changed since the split (${[...staleFiles].slice(0, 5).join(", ")}${staleFiles.size > 5 ? ", ..." : ""}). The titles and descriptions were written for the old text. Re-run split (and the agents) on the current files, or pass --allow-stale to build anyway.`);
-  const out = path.resolve(opt("--out", "whitebox.json"));
+  const out = path.resolve(opt("--out", path.join(WORK, "whitebox.json")));
   fs.writeFileSync(out, JSON.stringify({ version: 1, root: P().root, title, tree: root }));
   // find-style flat listing: group;path;file:start-end;description
   const flat = []; const gOf = new Map(rows.map(r => [r.path, r.g]));
@@ -580,4 +580,6 @@ function cmdBuild() {
 }
 
 const CMDS = { split: cmdSplit, window: cmdWindow, check: cmdCheck, "merge-input": cmdMergeInput, "apply-merge": cmdApplyMerge, "describe-input": cmdDescribeInput, "check-desc": cmdCheckDesc, build: cmdBuild, status, "check-all": cmdCheckAll, "groups-args": cmdGroupsArgs, "reshape-list": cmdReshapeList, "reshape-count": cmdReshapeCount, estimate: cmdEstimate, "reshape-input": cmdReshapeInput, "check-reshape": cmdCheckReshape, "apply-reshape": cmdApplyReshape };
-if (!CMDS[cmd]) die("unknown command " + cmd); CMDS[cmd]();
+if (!CMDS[cmd]) die("unknown command " + cmd);
+if (!WORK) die("ERROR: --work DIR is required: put work files in a scratch directory outside the project (for example the scratchpad)");
+CMDS[cmd]();

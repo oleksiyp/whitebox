@@ -6,6 +6,18 @@ BEGIN {
   src = ENVIRON["WB_SRC"]; JOUT = ENVIRON["WB_OUT"]
   t = slurp(ENVIRON["WB_TEMPLATE"])
   if (!SL_OK) { print "Error: ENOENT: no such file or directory, open '" ENVIRON["WB_TEMPLATE"] "'" > "/dev/stderr"; exit 1 }
+  if (ENVIRON["WB_HASTITLE"] == "1" && ENVIRON["WB_TITLE"] != "") {
+    ttl = ENVIRON["WB_TITLE"]; gsub(/&/, "\\&amp;", ttl); gsub(/</, "\\&lt;", ttl); gsub(/>/, "\\&gt;", ttl); gsub(/"/, "\\&quot;", ttl)
+    i = index(t, "<title>Whitebox</title>")
+    if (i > 0) t = substr(t, 1, i - 1) "<title>" ttl "</title>" substr(t, i + 23)
+  }
+  if (ENVIRON["WB_ARTIFACT"] == "1") {
+    nl = split(t, TL, "\n"); t = ""
+    for (k = 1; k <= nl; k++) {
+      if (TL[k] == "<!doctype html>" || TL[k] == "<html lang=\"en\">" || TL[k] == "<head>" || TL[k] == "<meta charset=\"utf-8\">" || TL[k] == "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" || TL[k] == "</head>" || TL[k] == "<body>" || TL[k] == "</body>" || TL[k] == "</html>") continue
+      t = t (kept++ > 0 ? "\n" : "") TL[k]
+    }
+  }
   i = index(t, "__APPLY_CMD__")
   if (i > 0) t = substr(t, 1, i - 1) ENVIRON["WB_APPLYCMD"] substr(t, i + 13)
   i = index(t, "__TREE__")

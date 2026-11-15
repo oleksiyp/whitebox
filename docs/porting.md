@@ -18,6 +18,8 @@ Same four tools, same names, different extension, in `skills/whitebox/scripts/`:
 Helper files are allowed (`scripts/lib/*.awk`, `scripts/lib/*.ps1`) but the four entry points must work when invoked by absolute
 path from any directory, with no installation step. `editor.template.html` is shared by all implementations and must not change.
 
+**No implicit files.** `--work DIR` is required by every subcommand (missing -> `ERROR: --work DIR is required: put work files in a scratch directory outside the project (for example the scratchpad)`, exit 1; an unknown command is reported first); `build` writes `whitebox.json`/`whitebox.paths` into the work directory unless `--out` says otherwise; `build-editor` requires both `<whitebox.json> <out.html>` (usage message, exit 2) and takes `--title NAME` (HTML-escaped `<title>`) and `--artifact` (drops the wrapper lines `<!doctype html>`, `<html lang="en">`, `<head>`, the charset and viewport `<meta>` lines, `</head>`, `<body>`, `</body>`, `</html>`, because the Artifact tool adds its own skeleton). The tree is embedded with `<` escaped as `\u003c` (a spec containing `</script>` must not break the page).
+
 Every subcommand of `whitebox.mjs` must be ported: `split window check check-all status groups-args estimate merge-input apply-merge
 describe-input check-desc reshape-count reshape-list reshape-input check-reshape apply-reshape build`. The arguments, flags
 (`--work --out --window --max-kb --include --exclude --tests --config --allow-stale --force --drop-excluded --dry-run --root`) and

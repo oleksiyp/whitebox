@@ -39,7 +39,8 @@ test("ps runtime: output has no BOM and no CR, files are written without BOM", {
 
 test("ps runtime: unknown command, missing arguments and usage exit codes", { skip: !HAVE_PS }, () => {
   let r = ps("whitebox", ["nope"]); assert.equal(r.code, 1); assert.equal(r.out.trim(), "unknown command nope");
-  r = ps("whitebox", ["split"]); assert.equal(r.code, 1); assert.match(r.out, /^usage: split/);
+  r = ps("whitebox", ["split", "--work", "w"]); assert.equal(r.code, 1); assert.match(r.out, /^usage: split/);
+  r = ps("whitebox", ["split"]); assert.equal(r.code, 1); assert.match(r.out, /--work DIR is required/);
   r = ps("apply-edits", []); assert.equal(r.code, 2); assert.match(r.out, /usage: apply-edits/);
 });
 

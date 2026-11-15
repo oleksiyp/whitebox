@@ -6,7 +6,9 @@
 <title>Whitebox</title>
 <style>
 :root{--bg:#f4f5f9;--panel:#fff;--ink:#1b2130;--muted:#6a7590;--line:#e2e6ef;--line2:#cfd6e4;--accent:#2f54eb;--accent-bg:#e9eeff;--edit:#d97706;--edit-bg:#fff4e0;--ok:#15803d;--lum:46%;--hov:#f0f2f8}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f131b;--panel:#171c27;--ink:#e7ebf4;--muted:#8d99b3;--line:#262e3f;--line2:#36415a;--accent:#7b97ff;--accent-bg:#1f2a4a;--edit:#f5a73b;--edit-bg:#33280f;--ok:#4ade80;--lum:62%;--hov:#1d2433}}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f131b;--panel:#171c27;--ink:#e7ebf4;--muted:#8d99b3;--line:#262e3f;--line2:#36415a;--accent:#7b97ff;--accent-bg:#1f2a4a;--edit:#f5a73b;--edit-bg:#33280f;--ok:#4ade80;--lum:62%;--hov:#1d2433;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0f131b;--panel:#171c27;--ink:#e7ebf4;--muted:#8d99b3;--line:#262e3f;--line2:#36415a;--accent:#7b97ff;--accent-bg:#1f2a4a;--edit:#f5a73b;--edit-bg:#33280f;--ok:#4ade80;--lum:62%;--hov:#1d2433;color-scheme:dark}
+[hidden]{display:none!important}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -119,6 +121,7 @@ mark{background:#ffe58f;color:#000;border-radius:2px}
 .chg pre{margin:0;padding:5px 9px;white-space:pre-wrap;font:12px/1.45 ui-monospace,Menlo,monospace}
 .chg .del{background:#ffe8e8;color:#9b1c1c}.chg .add{background:#e6f8ea;color:#14532d}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .chg .del{background:#3a1a1a;color:#ffb4b4}:root:not([data-theme=light]) .chg .add{background:#14301e;color:#a7f3c0}}
+:root[data-theme=dark] .chg .del{background:#3a1a1a;color:#ffb4b4}:root[data-theme=dark] .chg .add{background:#14301e;color:#a7f3c0}
 .exl{font-size:12.5px;color:var(--muted);padding:2px 0}
 #changes .ft{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 #changes code{display:block;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font:11.5px/1.4 ui-monospace,Menlo,monospace;word-break:break-all;user-select:all}
@@ -146,9 +149,11 @@ mark{background:#ffe58f;color:#000;border-radius:2px}
     <div class="bd" id="chgBody"></div>
     <div class="ft">
       <label><input type="checkbox" id="dropEx"> Also delete excluded pieces from the spec files</label>
-      <div style="display:flex;gap:8px"><button class="btn primary" id="exp" style="flex:1">Download edits</button><button class="btn" id="ctx" style="flex:1">Context .md</button></div>
-      <div class="none">Then apply to the files:</div>
-      <code id="cmd"></code>
+      <button class="btn primary" id="send" hidden>Send edits to Claude</button>
+      <div style="display:flex;gap:8px"><button class="btn" id="exp" style="flex:1">Download edits</button><button class="btn" id="ctx" style="flex:1">Context .md</button></div>
+      <div class="none" id="sendmsg" role="status"></div>
+      <div id="applybox"><div class="none">Then apply to the files:</div>
+      <code id="cmd"></code></div>
       <div style="display:flex;gap:8px"><button class="btn ghost" id="copyCmd">Copy command</button><button class="btn ghost" id="reset" style="margin-left:auto;color:var(--edit)">Discard all</button><label class="btn ghost" style="margin:0">Open tree…<input id="file" type="file" accept=".json" hidden></label></div>
     </div>
   </div></aside>
@@ -414,10 +419,33 @@ $("#dropEx").onchange=drawChanges;
 $("#copyCmd").onclick=()=>navigator.clipboard?.writeText($("#cmd").textContent);
 $("#menu").onclick=()=>$("#side").classList.toggle("open");
 function dl(name,txt,type){const a=el("a");a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-$("#exp").onclick=()=>{const c=collect();dl("whitebox-edits.json",JSON.stringify({version:1,root:T.root||".",edits:c.edits,excluded:c.excluded,intents:c.intents},null,2),"application/json")};
+/* Inside a Claude artifact the page cannot start downloads itself and `window.claude` exists: use the `downloads` and `db` capabilities when
+   they resolve, and fall back to a plain link (standalone file) or hide the control. */
+const cap=async n=>{try{return window.claude&&window.claude.use?await window.claude.use(n):null}catch(_){return null}};
+const say=t=>{const m=$("#sendmsg");if(m)m.textContent=t||""};
+async function saveFile(name,txt,type){
+  const d=await cap("downloads");
+  if(d){try{await d.save({filename:name,data:txt});say("");return}catch(e){say(e&&e.code==="declined"?"Not saved.":"Saving is not available here.");if(!e||e.code==="declined")return}}
+  dl(name,txt,type);
+}
+const editsJson=()=>{const c=collect();return JSON.stringify({version:1,root:T.root||".",edits:c.edits,excluded:c.excluded,intents:c.intents},null,2)};
+async function sendEdits(){
+  const c=collect();if(!c.edits.length&&!c.excluded.length&&!c.intents.length){say("Nothing to send yet: edit or exclude a piece first.");return}
+  const db=await cap("db");if(!db){say("Sending to Claude is not available here. Use Download edits.");return}
+  const json=editsJson(),CH=60000,parts=[];
+  for(let i=0;i<json.length;){let j=Math.min(json.length,i+CH);const cc=json.charCodeAt(j);if(j<json.length&&cc>=0xDC00&&cc<=0xDFFF)j++;parts.push(json.slice(i,j));i=j}
+  try{
+    for(let i=0;i<parts.length;i++)await db.doc("whitebox-edits/c"+String(i).padStart(4,"0")).set({i,of:parts.length,part:parts[i]});
+    await db.doc("whitebox-edits/meta").set({n:parts.length,chars:json.length,edits:c.edits.length,excluded:c.excluded.length,intents:c.intents.length,sentAt:new Date().toISOString()});
+    say(`Sent ${c.edits.length} edit(s), ${c.excluded.length} exclusion(s) and ${c.intents.length} behaviour note(s). Tell Claude: "apply my whitebox edits".`);
+  }catch(e){say("Could not send: "+((e&&e.message)||"unknown error")+". Use Download edits.")}
+}
+$("#send").onclick=sendEdits;
+if(window.claude){$("#applybox").hidden=true;cap("db").then(d=>{if(d)$("#send").hidden=false})}
+$("#exp").onclick=()=>saveFile("whitebox-edits.json",editsJson(),"application/json");
 $("#ctx").onclick=()=>{const out=[];
   (function w(n,d){if(n.children){if(!stat(n).k)return;if(d>0)out.push("#".repeat(Math.min(d,6))+" "+n.title);n.children.forEach(c=>w(c,d+1))}else if(on(n))out.push(n.kind==="code"?(n.description||n.title):n.text)})(T.tree,0);
-  dl("spec-context.md",out.join("\n\n")+"\n","text/markdown")};
+  saveFile("whitebox-context.md",out.join("\n\n")+"\n","text/markdown")};
 $("#reset").onclick=()=>{if(!confirm("Discard all edits and exclusions?"))return;try{localStorage.removeItem(key)}catch(_){}load(JSON.parse(srcText))};
 $("#file").onchange=async e=>{const f=e.target.files[0];if(f){try{srcText=await f.text();load(JSON.parse(srcText))}catch(x){alert("Bad tree file: "+x.message)}}e.target.value=""};
 

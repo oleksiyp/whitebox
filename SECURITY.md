@@ -15,8 +15,9 @@ repository contains such content, exclude those paths (`--exclude`) or do not ru
 - Nothing is written into the analysed project unless you run `apply-edits.mjs` yourself.
 - `apply-edits.mjs` only edits markdown, verifies the original text of every change first, and has a `--dry-run`.
   It never rewrites or deletes source code.
-- Work files (in Claude's scratchpad, or `.whitebox-*` if you chose a directory), `whitebox-<project>.json` and `.html` contain
-  verbatim excerpts of your files. Do not commit or share them if the source is private.
+- The skill never creates a file in your project or the current directory: scratch files live in Claude's scratchpad (outside your project; the tools
+  refuse to run without an explicit `--work` directory) and the result is published as an Artifact, **private by default**. Both contain verbatim
+  excerpts of your files; do not share the Artifact, or copy the scratch files, if the source is private.
 
 ## Reporting a vulnerability
 Please use GitHub's private vulnerability reporting (Security tab -> "Report a vulnerability") instead of a public issue.

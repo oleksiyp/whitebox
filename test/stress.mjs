@@ -2,7 +2,7 @@
 export function rng(seed) { let s = seed >>> 0; return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296); }
 const pick = (r, a) => a[Math.floor(r() * a.length)];
 const int = (r, lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
-const WORDS = ["alpha", "beta", "gamma", "delta", "token", "queue", "ledger", "plan", "apply", "rule", "owner", "cache", "stream", "épée", "naïve", "über", "日本語", "✔", "—", "x1", "R-042", "`code`", "**bold**", "_it_", "[link](http://x.y/z)", "a|b", "{brace}", "}", "(", ")", "//", "#hash", "\"q\"", "'s'", "C:\\path"];
+const WORDS = ["alpha", "beta", "gamma", "delta", "token", "queue", "ledger", "plan", "apply", "rule", "owner", "cache", "stream", "épée", "naïve", "über", "日本語", "✔", "—", "x1", "R-042", "`code`", "**bold**", "_it_", "[link](http://x.y/z)", "a|b", "{brace}", "}", "(", ")", "//", "#hash", "\"q\"", "'s'", "C:\\path", "</script>", "<!--", "<b>x</b>", "&amp;"];
 const sent = (r, n) => Array.from({ length: n }, () => pick(r, WORDS)).join(" ");
 
 export function mdFile(r) {

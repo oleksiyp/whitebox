@@ -22,9 +22,9 @@ for ($i = 1; $i -lt $script:Argv.Length; $i++) {
   if (-not $a.StartsWith('--', [StringComparison]::Ordinal) -and ($script:VAL -cnotcontains $script:Argv[$i - 1])) { $script:Pos.Add($a) }
 }
 function PosNum([int]$k) { if ($k -lt $script:Pos.Count) { return (WbToNumber $script:Pos[$k]) } return [double]::NaN }
-$workOpt = Opt '--work' '.whitebox'
-if ($null -eq $workOpt) { WbDie 'TypeError: The "path" argument must be of type string. Received undefined' }
-$script:WORK = WbResolve $workOpt
+$workOpt = Opt '--work' $null
+$script:WORK = $null
+if ($null -ne $workOpt) { $script:WORK = WbResolve $workOpt }   # no implicit work directory
 $script:WIN = WbToNumber (Opt '--window' 220)
 $script:MAX = 80
 function Wp { $parts = New-Object 'System.Collections.Generic.List[string]'; $parts.Add($script:WORK); foreach ($a in $args) { $parts.Add([string]$a) }; return [System.IO.Path]::Combine($parts.ToArray()) }
@@ -1160,7 +1160,7 @@ function CmdBuild {
     $sf = $script:BStaleFiles; $five = [string]::Join(', ', $sf.GetRange(0, [Math]::Min(5, $sf.Count)))
     WbDie "ERROR: $($script:BStale) piece(s) in $($sf.Count) file(s) changed since the split ($five$(if ($sf.Count -gt 5) { ', ...' } else { '' })). The titles and descriptions were written for the old text. Re-run split (and the agents) on the current files, or pass --allow-stale to build anyway."
   }
-  $outOpt = Opt '--out' 'whitebox.json'; if ($null -eq $outOpt) { WbDie 'TypeError: The "path" argument must be of type string. Received undefined' }
+  $outOpt = Opt '--out' ([System.IO.Path]::Combine($script:WORK, 'whitebox.json'))
   $out = WbResolve $outOpt
   WbWriteText $out (WbToJson ([ordered]@{ version = 1; root = $rootPath; title = $title; tree = $root }) $false)
   $flat = New-Object 'System.Collections.Generic.List[string]'
@@ -1184,6 +1184,8 @@ function CmdBuild {
 
 # ---------------- main ----------------
 function Main {
+  $known = @('split', 'window', 'check', 'check-all', 'status', 'merge-input', 'apply-merge', 'describe-input', 'check-desc', 'reshape-count', 'reshape-list', 'reshape-input', 'check-reshape', 'apply-reshape', 'groups-args', 'estimate', 'build')
+  if (($known -ccontains $script:Cmd) -and ($null -eq $script:WORK)) { WbDie 'ERROR: --work DIR is required: put work files in a scratch directory outside the project (for example the scratchpad)' }
   switch -CaseSensitive ($script:Cmd) {
     'split' { CmdSplit }
     'window' { CmdWindow }

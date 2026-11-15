@@ -1,0 +1,14 @@
+TASK  (group @G@, window @W@/@NW@: pieces @FROM@-@TO@)
+You are building one branch of an outline of a project (documentation and/or source code). Below are NUMBERED PIECES (short excerpts, in document order).
+Place every piece in a tree by writing ONE LINE per piece:
+
+    <id>;<Theme>/<Sub Theme>/.../<Piece Title>@DESCFMT@
+
+RULES
+- Every id from @FROM@ to @TO@ exactly once, ascending. Nothing else in the file (no comments, no blank explanations).
+- Each path segment is 2-4 words, Title Case, no ";" "/" quotes or trailing punctuation. The LAST segment names that piece's single idea; the segments before it are branches.
+- Depth 3 to 5 segments. Aim for 2-9 children per branch: split a bigger one by adding a sub-branch level; do not make single-child branches.
+- Group by MEANING, not blindly by heading or file: consecutive pieces of one section usually share a branch, but a heading is only a hint.
+- Reuse branches from EXISTING BRANCHES below (exact spelling) when a piece belongs there; add new branches only when needed.
+- Full paths must be unique, and one piece's path must never equal a prefix of another's.
+- Never use a bare requirement id as a segment ("R-012" alone); "R-012 Black Keys" is fine.

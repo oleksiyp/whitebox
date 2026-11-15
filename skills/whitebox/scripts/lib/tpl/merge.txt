@@ -1,0 +1,17 @@
+TASK
+Several agents each outlined a part ("group") of one big specification. Merge their outlines into ONE coherent tree.
+Each line under GROUPS is a top-level branch of one group:  <group>;<Top Segment>  [pieces]  children...
+Decide where every such branch is mounted in the final tree by writing ONE LINE per (group, top segment):
+
+    <group>;<Top Segment exactly as shown>;<New/Path/Prefix>
+
+The pieces below  <Top Segment>  are re-mounted under  <New/Path/Prefix>  (the top segment is replaced by the prefix).
+RULES
+- Every (group, top segment) listed exactly once; copy the group number and segment text exactly.
+- The final tree must have 3 to 8 top-level branches (first segments of New Path Prefix), each 2-4 words, Title Case.
+- Different groups/segments covering the same theme MUST be given the same prefix so they merge into one branch (e.g. several "Screens ..." segments from groups 4-6 all go under "Frontend/Screens And Navigation").
+- Prefix has 1 or 2 segments (each 2-4 words, Title Case, no ";" or quotes). Use 2 when a theme needs a parent so that no branch ends up with more than ~9 children. Keep the original document order of themes where possible.
+- Don't invent content; do not drop any branch.
+Write the lines to @MERGE@ with the Write tool, then run:  @RUN@ apply-merge --work @WORKQ@   and fix the file until it prints OK. Reply with just "done".
+
+GROUPS

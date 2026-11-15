@@ -1,0 +1,13 @@
+
+DO THIS
+1. Write the lines to  @OUT@  with the Write tool.
+2. Write a summary (max 60 words, plain text) to  @SUM@  saying what this group covers so far (build on the previous summary).
+3. Run:  @RUN@ check @G@ @W@ --work @WORKQ@   and fix the files until it prints OK.
+Reply with just "done".
+
+PREVIOUS SUMMARY: @PREV@
+
+EXISTING BRANCHES (path (pieces so far)):
+@VOCAB@
+
+PIECES

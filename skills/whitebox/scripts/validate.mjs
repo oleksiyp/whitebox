@@ -1,12 +1,13 @@
 // node tools/validate.mjs whitebox.json
 import { readFileSync } from "node:fs";
+String.prototype.trim = function () { return this.replace(/^[ \t\r\n\f\v]+|[ \t\r\n\f\v]+$/g, ""); }; // ASCII-only, same as whitebox.mjs
 import { resolve, dirname } from "node:path";
 const f = process.argv[2] || "whitebox.json";
 const T = JSON.parse(readFileSync(f, "utf8"));
 const base = resolve(dirname(f), T.root || ".");
 const errs = [], warn = [], ids = new Set(), leaves = [], cache = {};
 const lines = file => cache[file] ??= readFileSync(resolve(base, file), "utf8").replace(/\r\n/g, "\n").split("\n");
-const words = s => s.trim().split(/\s+/).length;
+const words = s => s.trim().split(/[ \t\r\n\f\v]+/).length;
 let depth = 0;
 (function walk(n, d, path) {
   depth = Math.max(depth, d);
@@ -41,7 +42,7 @@ for (const [file, ls] of Object.entries(by)) {
   for (let i = 1; i < ls.length; i++) if (ls[i].start <= ls[i - 1].end) errs.push(`${file}: leaves overlap at line ${ls[i].start} ("${ls[i].title}")`);
   const covered = new Set(); ls.forEach(l => { for (let k = l.start; k <= l.end; k++) covered.add(k); });
   const isCode = ls.some(l => l.kind === "code"); const miss = []; let fence = false;
-  lines(file).forEach((t, i) => { if (/^```/.test(t)) fence = !fence; if (t.trim() && (isCode || fence || !/^#{1,6}\s/.test(t)) && !covered.has(i + 1)) miss.push(i + 1); });
+  lines(file).forEach((t, i) => { if (/^```/.test(t)) fence = !fence; if (t.trim() && (isCode || fence || !/^#{1,6}[ \t\r\n\f\v]/.test(t)) && !covered.has(i + 1)) miss.push(i + 1); });
   if (miss.length) errs.push(`${file}: ${miss.length} content lines not covered, e.g. ${miss.slice(0, 8).join(",")}`);
 }
 console.log(`${leaves.length} leaves, ${ids.size - leaves.length} branches, depth ${depth}, files: ${Object.keys(by).join(", ")}`);

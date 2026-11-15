@@ -90,3 +90,17 @@ test("markdown over the source size cap is still included (docs are split, not s
   assert.equal(r.code, 0, r.out);
   assert.deepEqual(readJson(path.join(work, "selection.json")).included, ["BIG.md"]);
 });
+
+test("test directories (tests/, __tests__/, e2e/) are skipped by default, like test file names; --tests brings them back", () => {
+  const f = { "src/app.go": "package a\n\nfunc A() {}\n", "tests/helper.go": "package t\n\nfunc H() {}\n", "pkg/__tests__/a.js": "export const a = 1;\n", "e2e/flow.ts": "export const f = 1;\n", "src/test_util.py": "def t(): pass\n", "docs/testing.md": "# Testing\n\nHow we test.\n" };
+  const dir = project(f), run = extra => { const work = path.join(tmp(), "w"); assert.equal(cli(["split", dir, "--work", work, ...extra]).code, 0); return new Set(readJson(path.join(work, "selection.json")).included); };
+  const d = run([]);
+  assert.deepEqual([...d].sort(), ["docs/testing.md", "src/app.go"]);
+  assert.equal(run(["--tests"]).size, 6);
+});
+
+test("nothing selected is an error, not a cost estimate of -Infinity", () => {
+  const dir = project({ "image.png": "PNG\u0000", "go.sum": "x\n" }), work = path.join(tmp(), "w");
+  const r = cli(["split", dir, "--work", work]);
+  assert.equal(r.code, 1); assert.match(r.out, /nothing to analyse/); assert.ok(!/Infinity|NaN/.test(r.out));
+});

@@ -78,7 +78,7 @@ test("merge -> describe -> build -> validate -> editor, end to end", () => {
   r = buildEditor([json, html]); assert.equal(r.code, 0, r.out);
   const page = fs.readFileSync(html, "utf8");
   assert.ok(!page.includes("__TREE__") && !page.includes("__APPLY_CMD__"));
-  assert.match(page, /apply-edits\.mjs whitebox-edits\.json/);
+  assert.match(page, /apply-edits\.(mjs|sh|ps1) whitebox-edits\.json/);
   const script = page.match(/<script>\n"use strict";[\s\S]*?<\/script>/)[0].replace(/^<script>|<\/script>$/g, "");
   assert.doesNotThrow(() => new vm.Script(script), "editor script must compile");
 });

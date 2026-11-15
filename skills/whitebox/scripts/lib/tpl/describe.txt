@@ -1,0 +1,7 @@
+TASK
+Write a one-sentence description (max 20 words, plain text, no quotes or ";") for each BRANCH below, saying what that part of the specification covers. Use the child titles as evidence.
+Output ONE LINE per branch, exactly:   <Branch/Path exactly as shown>;<description>
+Write the lines to @DESCF@ with the Write tool (every branch exactly once), then run:
+  @RUN@ check-desc @G@ --work @WORKQ@   and fix until it prints OK. Reply with just "done".
+
+BRANCHES (@NB@)

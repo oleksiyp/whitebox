@@ -18,7 +18,8 @@ and repaired by hand.
 | `reshape.applied` | apply-reshape | marker: apply-merge refuses to overwrite after this (use `--force`) |
 
 **`whitebox.json`** (output of `build`): `{version, root, title, tree}`. Branch: `{id, title, description?, children}`.
-Leaf: `{id, title, file, start, end, text}`; code leaves add `{kind:"code", lang, description}`.
+Leaf: `{id, title, file, start, end, text}`; code leaves add `{kind:"code", lang, description}`. The order of keys inside an object
+is not significant to readers (the implementations write them in the same order, `title` first and `id` near the end, which keeps files byte-identical).
 **`whitebox.paths`**: `group;path;file:start-end;description`, one line per node, `find`-style.
 
 **`whitebox-edits.json`** (downloaded from the editor):

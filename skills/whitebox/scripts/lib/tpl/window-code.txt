@@ -1,0 +1,6 @@
+
+CODE PIECES (marked [code <lang>]) - INVERT THE CODE INTO SPECIFICATION
+- For every [code] piece write ONE EXTRA FIELD, the description:  <id>;<path>;<description>   (required for code pieces, never for documentation pieces).
+- The description states WHAT the system does or guarantees at that point, as a requirement a reader could re-implement from: behaviour, inputs/outputs, rules, invariants, error handling, side effects. Plain present-tense English, 1-2 sentences, at most 40 words, no ";" and no code. Do not narrate the code ("loops over...", "calls..."); name public identifiers only when the behaviour depends on them.
+- Path segments name CAPABILITIES and behaviours ("Retry Failed Deployments", "Reject Expired Tokens"), never files, packages, functions or types. Group by capability across files, not by directory layout.
+- Imports, boilerplate and trivial glue still get a piece line (path ending like "Module Setup") with a few-word description.

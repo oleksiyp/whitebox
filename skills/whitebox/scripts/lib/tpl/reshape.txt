@@ -1,0 +1,11 @@
+TASK
+The branch "@PATH@" of a specification outline has @NCH@ children, too many to survey. Group them into 3 to 7 themed groups.
+Write ONE LINE per child, exactly:    <Child Title exactly as shown>;<Group Title>;<description>
+- Every child exactly once. All children of one group get the identical Group Title and description.
+- Group Title: 2-4 words, Title Case, no ";" or "/" or quotes, different from every child title.
+- description: one sentence, max 20 words, saying what the group covers.
+- Each group should end up with 2-9 children; keep children of a group close in the original order where the theme allows.
+Write the lines to @RF@ with the Write tool, then run:
+  @RUN@ check-reshape @N@ --work @WORKQ@   and fix the file until it prints OK. Reply with just "done".
+
+CHILDREN of "@PATH@"

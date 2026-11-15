@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/powershell:latest
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/* \
+ && git config --system --add safe.directory '*'
+# Build with --platform linux/amd64 on Apple silicon: the arm32 variant that docker picks there runs under qemu and crashes randomly.
+# W^X off: harmless elsewhere, and avoids crashes under emulators.
+ENV DOTNET_EnableWriteXorExecute=0

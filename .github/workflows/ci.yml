@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - run: npm test
@@ -29,7 +29,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: shellcheck
@@ -51,7 +51,7 @@ jobs:
           - { image: alpine, shell: busybox sh }
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: docker build -f test/docker/${{ matrix.image }}.Dockerfile -t wb-${{ matrix.image }} test/docker
@@ -72,7 +72,7 @@ jobs:
         pwsh: [powershell, pwsh]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: ${{ matrix.pwsh }} -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'

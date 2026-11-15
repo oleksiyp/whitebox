@@ -4,12 +4,13 @@ export const meta = {
   phases: [
     { title: 'Outline', detail: 'one haiku chain per group, windows in order', model: 'haiku' },
     { title: 'Verify', detail: 'check-all, redo failing windows', model: 'haiku' },
-    { title: 'Merge', detail: 'one haiku agent mounts group outlines into one tree', model: 'haiku' },
+    { title: 'Merge', detail: 'one agent mounts group outlines into one tree (haiku, or args.models.merge)', model: 'haiku' },
     { title: 'Describe', detail: 'one haiku agent per group writes branch descriptions', model: 'haiku' },
     { title: 'Reshape', detail: 'regroup branches wider than 9, repeat until none', model: 'haiku' },
   ],
 }
 // args = output of:  <run> groups-args --work <W>   ->  {work, cli, run, groups:[{g, windows}]}
+// optional: "models": {"merge": "opus"} overrides the model of a phase (outline verify merge describe reshape).
 // `run` is the full launcher command of whichever implementation produced it (node X.mjs | sh X.sh | pwsh -File X.ps1).
 const WORK = args.work
 const CLI = args.cli
@@ -17,13 +18,15 @@ const GROUPS = args.groups
 const q = x => (/[ \t"'$&;()<>|*?\[\]{}!~#`\\]/.test(x) ? JSON.stringify(x) : x)
 const RUN = args.run || `node ${q(CLI)}`   // `node` fallback for args produced by 0.2.0 or older
 const run = c => `${RUN} ${c} --work ${q(WORK)}`
-const H = { model: 'haiku' }
+// args.models optionally overrides the model per phase, e.g. {"merge": "opus"}; keys: outline verify merge describe reshape. Default: haiku everywhere.
+const MODELS = args.models || {}
+const M = ph => ({ model: MODELS[ph] || 'haiku' })
 const TAIL = 'Read its ENTIRE output and carry out the TASK it describes exactly. Reply "done" when its final check prints OK.'
 
 const winPrompt = (g, w) => `You work in the current project directory. First run \`${run(`check ${g} ${w}`)}\` with Bash; if it prints OK the window is already finished: reply "done" and stop. Otherwise run \`${run(`window ${g} ${w}`)}\` with Bash. ${TAIL}`
 async function doWindow(g, w) {
   for (let t = 0; t < 2; t++) {
-    const r = await agent(winPrompt(g, w), { ...H, phase: 'Outline', label: `g${g} w${w}` })
+    const r = await agent(winPrompt(g, w), { ...M('outline'), phase: 'Outline', label: `g${g} w${w}` })
     if (r) return true
   }
   return false
@@ -39,7 +42,7 @@ phase('Verify')
 const FAIL = { type: 'object', properties: { failing: { type: 'array', items: { type: 'object', properties: { g: { type: 'number' }, w: { type: 'number' } }, required: ['g', 'w'] } } }, required: ['failing'] }
 let failing = []
 for (let round = 0; round < 3; round++) {
-  const r = await agent(`Run \`${run('check-all')}\` with Bash. It prints one JSON line. Return the "failing" array from it unchanged.`, { ...H, phase: 'Verify', label: `check-all #${round + 1}`, schema: FAIL })
+  const r = await agent(`Run \`${run('check-all')}\` with Bash. It prints one JSON line. Return the "failing" array from it unchanged.`, { ...M('verify'), phase: 'Verify', label: `check-all #${round + 1}`, schema: FAIL })
   failing = r ? r.failing : []
   log(`verify round ${round + 1}: ${failing.length} failing windows`)
   if (!failing.length) break
@@ -53,11 +56,11 @@ for (let round = 0; round < 3; round++) {
 if (failing.length) log(`WARNING: ${failing.length} windows still failing: ${JSON.stringify(failing.slice(0, 20))}`)
 
 phase('Merge')
-await agent(`You work in the current project directory. Run \`${run('merge-input')}\` with Bash. ${TAIL}`, { ...H, phase: 'Merge', label: 'merge' })
+await agent(`You work in the current project directory. Run \`${run('merge-input')}\` with Bash. ${TAIL}`, { ...M('merge'), phase: 'Merge', label: 'merge' })
 
 phase('Describe')
 await pipeline(GROUPS, async grp => {
-  await agent(`You work in the current project directory. Run \`${run(`describe-input ${grp.g}`)}\` with Bash. ${TAIL}`, { ...H, phase: 'Describe', label: `describe g${grp.g}` })
+  await agent(`You work in the current project directory. Run \`${run(`describe-input ${grp.g}`)}\` with Bash. ${TAIL}`, { ...M('describe'), phase: 'Describe', label: `describe g${grp.g}` })
   return grp.g
 })
 
@@ -65,17 +68,17 @@ const COUNT = { type: 'object', properties: { count: { type: 'number' } }, requi
 let wide = null
 for (let round = 1; round <= 3; round++) {
   phase('Reshape')
-  const r = await agent(`Run \`${run('reshape-list')}\` with Bash. It prints one JSON line. Return its "count" field.`, { ...H, phase: 'Reshape', label: `list #${round}`, schema: COUNT })
+  const r = await agent(`Run \`${run('reshape-list')}\` with Bash. It prints one JSON line. Return its "count" field.`, { ...M('reshape'), phase: 'Reshape', label: `list #${round}`, schema: COUNT })
   wide = r ? r.count : 0
   log(`reshape round ${round}: ${wide} wide branches`)
   if (!wide) break
   await pipeline(Array.from({ length: wide }, (_, i) => i + 1), async n => {
     for (let t = 0; t < 2; t++) {
-      const x = await agent(`You work in the current project directory. Run \`${run(`reshape-input ${n}`)}\` with Bash. ${TAIL}`, { ...H, phase: 'Reshape', label: `r${round} b${n}` })
+      const x = await agent(`You work in the current project directory. Run \`${run(`reshape-input ${n}`)}\` with Bash. ${TAIL}`, { ...M('reshape'), phase: 'Reshape', label: `r${round} b${n}` })
       if (x) return n
     }
     return null
   })
-  await agent(`Run \`${run('apply-reshape')}\` with Bash and reply with its output line.`, { ...H, phase: 'Reshape', label: `apply #${round}` })
+  await agent(`Run \`${run('apply-reshape')}\` with Bash and reply with its output line.`, { ...M('reshape'), phase: 'Reshape', label: `apply #${round}` })
 }
 return { failingWindows: failing, wideBranchesLeft: wide }

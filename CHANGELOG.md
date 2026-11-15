@@ -3,6 +3,10 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog](https://keepachangelog.com/),
 versioning: [SemVer](https://semver.org/).
 
+## [0.4.0] - 2026-11-15
+### Added
+- Optional per-phase model choice: workflow args `"models": {"merge": "opus"}` (default Haiku everywhere). The skill offers an Opus merge at the go/no-go question.
+
 ## [0.3.0] - 2026-11-15
 ### Added
 - **POSIX `sh` + `awk` and PowerShell ports** of all four tools (`whitebox`, `apply-edits`, `validate`, `build-editor`), so whitebox runs with nothing

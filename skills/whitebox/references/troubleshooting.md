@@ -12,6 +12,8 @@ not 2-4 words, duplicate paths, missing code descriptions). Edit `W/out/gG-wN.tx
 **Redo only the reshape phase** (e.g. quality was poor): `rm W/reshape.applied W/desc/_all.txt`,
 `CLI apply-merge --work W --force`, then `cp S/reshape.js W/reshape.js` and the Workflow tool with `W/reshape.js` (absolute) and args `{"work":"W","cli":"CLI"}`.
 
+**Stronger model for one phase:** the workflow args accept `"models": {"merge": "opus"}` (keys `outline verify merge describe reshape`; default Haiku). For a finished run, redo only the merge with it (next recipe), but keep Opus to the single merge agent.
+
 **Redo only the merge:** delete `W/merge.txt`, run the merge agent again (`merge-input`), then `apply-merge --force`
 and redo reshape as above.
 

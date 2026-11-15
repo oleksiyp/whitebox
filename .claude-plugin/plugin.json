@@ -1,6 +1,6 @@
 {
   "name": "whitebox",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Turn a codebase or a pile of specs into one overseeable tree of plain-language pieces, review it in an interactive editor, and write markdown edits back.",
   "author": { "name": "Oleksiy Pylypenko" },
   "homepage": "https://github.com/oleksiyp/whitebox",

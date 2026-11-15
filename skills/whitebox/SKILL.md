@@ -57,11 +57,13 @@ changes files, so those are the user's decisions.
 2. **ASK - scope and go/no-go.** Show the selection summary and the estimate (agents, tokens, minutes) in plain words.
    Ask: proceed / change the selection (tests? config? other exclusions?) / cancel. Mention that the content of
    included files is processed by Haiku subagents; if the repo is proprietary or sensitive, say so and let them decide.
-   Re-run split with other flags if they want changes. Do not start the workflow without a yes.
+   Re-run split with other flags if they want changes. Also offer the **merge on Opus** option: one agent that picks the top-level branches
+   readers see first, so it is cheap (about one agent's tokens) but draws on the quota faster than Haiku; recommend it for large trees, default is Haiku.
+   Do not start the workflow without a yes.
 3. **Workflow** - `CLI groups-args --work W` prints the args (absolute paths and the full launcher command in `run`). The Workflow tool loads scripts from the
    working directory or the scratchpad, and the skill may live elsewhere (plugin or global install), so first
    `cp S/workflow.js W/workflow.js`, then call the Workflow tool with `scriptPath: W/workflow.js` (absolute) and those args as a
-   JSON value. Phases: Outline -> Verify -> Merge -> Describe -> Reshape. It is resumable. If the Workflow tool is unavailable,
+   JSON value (add `"models": {"merge": "opus"}` only if the user chose it). Phases: Outline -> Verify -> Merge -> Describe -> Reshape. It is resumable. If the Workflow tool is unavailable,
    see `references/troubleshooting.md` (manual fallback).
 4. **Verify yourself, never trust the summary** - read-only commands only: `CLI status --work W`,
    `CLI check-all --work W` (no failing windows), `CLI reshape-count --work W` (count 0).

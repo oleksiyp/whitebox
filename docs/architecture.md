@@ -18,6 +18,12 @@ Consequences: a model can never corrupt the source (it never sees a line number 
 sloppy model answer is rejected by a checker and repaired in the same agent session, and the expensive part can be
 done by a cheap model.
 
+## Three implementations
+The four tools are implemented three times so that nothing has to be installed: Node (the reference, `*.mjs`), POSIX `sh` + `awk`
+(`*.sh`, `lib/*.awk`) and PowerShell 5.1/7 (`*.ps1`). They are held identical by `docs/porting.md` (the contract) and by the parity tests, which run the same
+random projects through the reference and a port and compare printed messages, work files, `whitebox.json`, the editor page and the bytes
+written back. `groups-args` prints a `run` field (the full launcher command), which the workflow uses, so a run stays on one implementation.
+
 ## Pipeline
 
 ```

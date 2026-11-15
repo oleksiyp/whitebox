@@ -1,0 +1,3 @@
+# Everything is LF in the repo and in checkouts: the shell scripts, awk programs, templates and fixtures are byte-sensitive.
+* text=auto eol=lf
+*.png binary

@@ -9,11 +9,14 @@ export const meta = {
     { title: 'Reshape', detail: 'regroup branches wider than 9, repeat until none', model: 'haiku' },
   ],
 }
-// args = output of:  node <cli> groups-args --work <W>   ->  {work, cli, groups:[{g, windows}]}
+// args = output of:  <run> groups-args --work <W>   ->  {work, cli, run, groups:[{g, windows}]}
+// `run` is the full launcher command of whichever implementation produced it (node X.mjs | sh X.sh | pwsh -File X.ps1).
 const WORK = args.work
 const CLI = args.cli
 const GROUPS = args.groups
-const run = c => `node ${CLI} ${c} --work ${WORK}`
+const q = x => (/[ \t"'$&;()<>|*?\[\]{}!~#`\\]/.test(x) ? JSON.stringify(x) : x)
+const RUN = args.run || `node ${q(CLI)}`   // `node` fallback for args produced by 0.2.0 or older
+const run = c => `${RUN} ${c} --work ${q(WORK)}`
 const H = { model: 'haiku' }
 const TAIL = 'Read its ENTIRE output and carry out the TASK it describes exactly. Reply "done" when its final check prints OK.'
 

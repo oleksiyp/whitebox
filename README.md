@@ -34,9 +34,10 @@ or copy the skill folder yourself (project-level `.claude/skills/` or global `~/
 git clone https://github.com/oleksiyp/whitebox
 cp -r whitebox/skills/whitebox ~/.claude/skills/whitebox
 ```
-Requirements: Node >= 18 (no npm packages), git (optional, for `.gitignore`-aware selection), and Claude Code with the
-Workflow tool (a manual fallback using plain subagents is documented in
-[`references/troubleshooting.md`](skills/whitebox/references/troubleshooting.md)).
+Requirements: **nothing to install**. The tools exist in three identical implementations and the skill picks the first that works:
+Node >= 18, or POSIX `sh` + `awk` (macOS, Linux, Git Bash, WSL), or PowerShell (Windows PowerShell 5.1 or PowerShell 7). git is optional
+(for `.gitignore`-aware selection). The agent step needs Claude Code with the Workflow tool (a manual fallback using plain subagents is
+documented in [`references/troubleshooting.md`](skills/whitebox/references/troubleshooting.md)).
 
 ## Use
 In Claude Code, from any directory (scratch files go to Claude's scratchpad, the finished `whitebox-<project>.html` and `.json` to the current directory):
@@ -87,7 +88,7 @@ See [`SECURITY.md`](SECURITY.md).
 
 ## Repository layout
 ```text
-skills/whitebox/      the skill: SKILL.md, workflow.js, reshape.js, scripts/, references/
+skills/whitebox/      the skill: SKILL.md, workflow.js, reshape.js, references/, scripts/ (each tool as .mjs, .sh and .ps1)
 .claude-plugin/       plugin and marketplace manifests
 test/                 node:test suites (npm test), fixtures are generated in temp dirs
 docs/                 architecture notes and screenshots
@@ -96,7 +97,10 @@ examples/dogfood/     whitebox run on its own repository (open whitebox.html)
 
 ## Development
 ```sh
-npm test    # 30 tests: segmenter, file selection, the whole pipeline with a fake agent, write-back safety
+npm test                                   # Node reference: segmenter, file selection, whole pipeline with a fake agent, write-back safety
+WHITEBOX_IMPL=sh  npm test                 # the same tests against the sh + awk port
+WHITEBOX_IMPL=ps  WHITEBOX_PWSH=pwsh npm test   # ... and the PowerShell port
+WHITEBOX_PARITY=sh,ps node --test test/parity.test.mjs   # ports vs the reference: messages, files, JSON, HTML, bytes written back
 ```
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). Issues and ideas welcome.
 

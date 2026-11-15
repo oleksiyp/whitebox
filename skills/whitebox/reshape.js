@@ -3,8 +3,10 @@ export const meta = {
   description: 'whitebox: re-run only the reshape phase, regrouping branches wider than 9 into themed sub-branches with haiku agents',
   phases: [{ title: 'Reshape', detail: 'one haiku agent per wide branch, repeat until none', model: 'haiku' }],
 }
-// args = {work, cli}   (see workflow.js; run `apply-merge` first only if tree.paths does not exist yet)
-const run = c => `node ${args.cli} ${c} --work ${args.work}`
+// args = {work, cli, run}   (see workflow.js; run `apply-merge` first only if tree.paths does not exist yet)
+const q = x => (/[ \t"'$&;()<>|*?\[\]{}!~#`\\]/.test(x) ? JSON.stringify(x) : x)
+const RUN = args.run || `node ${q(args.cli)}`
+const run = c => `${RUN} ${c} --work ${q(args.work)}`
 const H = { model: 'haiku', phase: 'Reshape' }
 const COUNT = { type: 'object', properties: { count: { type: 'number' } }, required: ['count'] }
 let wide = null

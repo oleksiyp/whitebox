@@ -1100,7 +1100,7 @@ function CmdApplyReshape {
 }
 function CmdGroupsArgs {
   $gs = WbNewList; foreach ($G in (GR)) { $gs.Add([ordered]@{ g = $G['g']; windows = $G['windows'].Count }) }
-  WbOut (WbToJson ([ordered]@{ work = $script:WORK; cli = (WbResolve $script:SelfPath); groups = $gs }) $false)
+  WbOut (WbToJson ([ordered]@{ work = $script:WORK; cli = (WbResolve $script:SelfPath); run = ($script:Launch + ' ' + $script:SELF); groups = $gs }) $false)
 }
 
 # ---------------- build ----------------

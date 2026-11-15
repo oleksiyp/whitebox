@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-import { cli, applyEdits, validate, buildEditor, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions } from "./helpers.mjs";
+import { spawnSync } from "node:child_process";
+import { cli, applyEdits, validate, buildEditor, sampleProject, tmp, readJson, fakeAgents, fakeDescriptions, IMPL } from "./helpers.mjs";
 
 /** run the whole deterministic pipeline with fake agents; returns paths */
 function pipeline() {
@@ -131,4 +132,16 @@ test("the cost estimate scales with agents and is printed after split", () => {
   assert.ok(E.agents >= E.windows && E.tokensM > 0 && E.minutes > 0);
   assert.equal(E.tokensM, Math.floor((E.agents * 6 + 5) / 10) / 10);
   assert.match(cli(["estimate", "--work", work]).out, /estimate: ~\d+ haiku agents/);
+});
+
+test("groups-args carries a runnable launcher command (`run`) for the workflow", () => {
+  const { work } = pipeline();
+  const a = JSON.parse(cli(["groups-args", "--work", work]).stdout);
+  assert.ok(path.isAbsolute(a.work) && path.isAbsolute(a.cli), "paths are absolute");
+  assert.match(a.run, /^(node|sh|pwsh|powershell)\b.*whitebox\.(mjs|sh|ps1)"?$/);
+  assert.ok(a.groups.length >= 1 && a.groups.every(g => g.g >= 1 && g.windows >= 1));
+  if (IMPL === "node") {   // only the node launcher can be executed from the host in every setup
+    const r = spawnSync("sh", ["-c", `${a.run} status --work "${a.work}"`], { encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr + r.stdout); assert.match(r.stdout, /windows done/);
+  }
 });

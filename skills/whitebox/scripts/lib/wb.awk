@@ -630,7 +630,7 @@ function cmdApplyReshape(   i, nw, ord, x, j, w, wpth, nr, cmap, ml, rest, S, ns
 
 function cmdGroupsArgs(   k, out) {
   loadGroups()
-  out = "{\"work\":" jstr(WORK) ",\"cli\":" jstr(SELFABS) ",\"groups\":["
+  out = "{\"work\":" jstr(WORK) ",\"cli\":" jstr(SELFABS) ",\"run\":" jstr(RUN) ",\"groups\":["
   for (k = 1; k <= GN; k++) out = out (k > 1 ? "," : "") "{\"g\":" GG[k] ",\"windows\":" GNW[k] "}"
   print out "]}"
 }

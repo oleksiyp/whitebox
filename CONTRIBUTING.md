@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. whitebox is small on purpose: zero dependencies, one CLI, one HTML template.
+Thanks for helping. whitebox is small on purpose: zero dependencies, one CLI in three implementations (Node, POSIX sh + awk, PowerShell), one HTML template.
 
 ## Setup
 ```sh
@@ -10,7 +10,7 @@ npm test        # Node >= 20 for the tests (the tool itself runs on Node >= 18);
 
 ## Layout
 - `skills/whitebox/` - the skill itself (this is what users install): `SKILL.md`, `workflow.js`, `reshape.js`,
-  `scripts/` (CLI, validator, editor builder, write-back), `references/`.
+  `scripts/` (CLI, validator, editor builder, write-back; each as `.mjs`, `.sh` + `lib/*.awk`, `.ps1`), `references/`.
 - `test/` - `node:test` suites. Fixtures are generated into temp directories, so nothing private can leak in.
 - `docs/` - architecture notes.
 
@@ -20,6 +20,8 @@ npm test        # Node >= 20 for the tests (the tool itself runs on Node >= 18);
    and every agent output must have a checker the agent runs until it prints `OK`.
 2. **Source code is never modified by write-back.** Keep that invariant and its test.
 3. **Zero runtime dependencies.** The editor is one self-contained HTML file that works from `file://`.
+3a. **Three implementations, one behaviour.** The Node files are the reference. A behaviour change lands there first, then in `*.sh`/`lib/*.awk` and `*.ps1`;
+   `docs/porting.md` is the contract and `test/parity.test.mjs` proves it (same messages, files, JSON, HTML and bytes written back on random projects).
 4. **Tests that can fail.** For segmenter or selection changes, add a case that fails without your change.
    Quick mutation check: break the code on purpose and make sure a test notices.
 5. **No private data** in fixtures, docs or screenshots.

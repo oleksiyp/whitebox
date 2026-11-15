@@ -545,7 +545,7 @@ function cmdApplyReshape() {
 }
 
 function cmdGroupsArgs() {
-  console.log(JSON.stringify({ work: WORK, cli: path.resolve(process.argv[1]), groups: GR().map(g => ({ g: g.g, windows: g.windows.length })) }));
+  console.log(JSON.stringify({ work: WORK, cli: path.resolve(process.argv[1]), run: "node " + SELF, groups: GR().map(g => ({ g: g.g, windows: g.windows.length })) }));
 }
 
 /* ---------------- build ---------------- */

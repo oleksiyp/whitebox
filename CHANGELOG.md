@@ -3,6 +3,20 @@
 All notable changes to this project are documented here. Format: [Keep a Changelog](https://keepachangelog.com/),
 versioning: [SemVer](https://semver.org/).
 
+## [Unreleased]
+### Added
+- **POSIX `sh` + `awk` and PowerShell ports** of all four tools (`whitebox`, `apply-edits`, `validate`, `build-editor`), so whitebox runs with nothing
+  to install: macOS/Linux with only the base system, Windows with the PowerShell that ships with it. The skill picks Node, else `sh`, else PowerShell.
+  Verified identical to the Node reference on random projects (messages, work files, JSON, editor page, bytes written back) on macOS, Debian
+  (dash + mawk), Alpine (busybox) and PowerShell 7; Windows PowerShell 5.1 and Windows are checked in CI.
+- `groups-args` prints `run` (the full launcher command) and the workflows use it instead of hard-coding `node`.
+- `.gitattributes` keeps LF line endings in Windows checkouts.
+
+### Fixed
+- Test directories (`tests/`, `test/`, `__tests__/`, `e2e/`) were never skipped by default because of a regex precedence slip; only test *file names* were.
+- `validate` trimmed Unicode whitespace, unlike the rest of the tool; it is ASCII-only now.
+- `split` on a selection that contains no pieces printed `~-Infinity min` and wrote empty work files; it now stops with `ERROR: nothing to analyse`.
+
 ## [0.2.0] - 2026-11-14
 ### Fixed
 - A UTF-8 byte order mark at the start of a file (common for files created on Windows) hid a first-line heading or code fence.
